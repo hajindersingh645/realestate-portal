@@ -85,6 +85,10 @@ export function createApp(options: AppOptions) {
     return reply.status(500).send({ error: { code: 'INTERNAL', message: 'Internal error' } });
   });
 
+  app.setNotFoundHandler((_request, reply) =>
+    reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'Route not found' } }),
+  );
+
   app.get('/health', { config: { public: true } }, () => ({ status: 'ok' as const }));
 
   app.get('/ready', { config: { public: true } }, async (_request, reply) => {

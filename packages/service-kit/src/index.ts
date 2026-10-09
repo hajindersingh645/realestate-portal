@@ -5,3 +5,4 @@ export * from './auth.js';
 export * from './db.js';
 export * from './outbox.js';
 export * from './rabbit.js';
+export * from './subscribe.js';

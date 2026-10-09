@@ -88,14 +88,17 @@ export function createOutboxRelay(options: OutboxRelayOptions) {
     });
   }
 
+  async function runOnce(): Promise<void> {
+    try {
+      await tick();
+    } catch (error: unknown) {
+      options.onError?.(error);
+    }
+    if (running) schedule();
+  }
+
   function schedule(): void {
-    timer = setTimeout(() => {
-      void tick()
-        .catch((error: unknown) => options.onError?.(error))
-        .finally(() => {
-          if (running) schedule();
-        });
-    }, intervalMs);
+    timer = setTimeout(() => void runOnce(), intervalMs);
   }
 
   return {

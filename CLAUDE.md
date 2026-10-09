@@ -34,7 +34,7 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 
 ## Local defaults
 
-- PostgreSQL: `postgresql://postgres:postgres@localhost:5432/real_estate` (one schema and role per service)
+- PostgreSQL: `postgresql://postgres:postgres@localhost:5433/real_estate` (one schema and role per service; host port 5433 so it does not clash with a Postgres already on 5432)
 - RabbitMQ: `amqp://guest:guest@localhost:5672` · management UI `http://localhost:15672`
 
 ## Commands

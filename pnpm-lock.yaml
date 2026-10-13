@@ -247,6 +247,33 @@ importers:
         specifier: ^1.3.36
         version: 1.3.36
 
+  services/catalog-service:
+    dependencies:
+      '@hanu/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@hanu/service-kit':
+        specifier: workspace:*
+        version: link:../../packages/service-kit
+      '@mikro-orm/core':
+        specifier: ^7.2.4
+        version: 7.2.4
+      '@mikro-orm/decorators':
+        specifier: ^7.2.4
+        version: 7.2.4(@mikro-orm/core@7.2.4)
+      '@mikro-orm/migrations':
+        specifier: ^7.2.4
+        version: 7.2.4(@mikro-orm/core@7.2.4)
+      '@mikro-orm/postgresql':
+        specifier: ^7.2.4
+        version: 7.2.4(@mikro-orm/core@7.2.4)
+      fastify:
+        specifier: ^5.12.5
+        version: 5.12.5
+      typebox:
+        specifier: ^1.3.36
+        version: 1.3.36
+
 packages:
 
   '@cacheable/memory@2.2.0':

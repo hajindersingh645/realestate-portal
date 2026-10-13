@@ -1,5 +1,5 @@
-import type { EntityClass } from '@mikro-orm/core';
-import { Migrator } from '@mikro-orm/migrations';
+import type { Constructor, EntityClass } from '@mikro-orm/core';
+import { Migrator, type Migration } from '@mikro-orm/migrations';
 import { defineConfig, MikroORM, type EntityManager } from '@mikro-orm/postgresql';
 
 export type Orm = MikroORM;
@@ -9,7 +9,8 @@ export interface OrmOptions {
   clientUrl: string;
   schema: string;
   entities: EntityClass<unknown>[];
-  migrationsPath?: string;
+  /** Migration classes, oldest first. Passed in directly so nothing is loaded from disk at runtime. */
+  migrations?: Constructor<Migration>[];
 }
 
 export async function createOrm(options: OrmOptions): Promise<Orm> {
@@ -18,11 +19,14 @@ export async function createOrm(options: OrmOptions): Promise<Orm> {
       clientUrl: options.clientUrl,
       schema: options.schema,
       entities: options.entities,
+      // A NULL column loads as `undefined`, so `field?: Date` on an entity is what you get back.
+      forceUndefined: true,
       extensions: [Migrator],
       migrations: {
-        path: options.migrationsPath,
+        migrationsList: options.migrations ?? [],
         tableName: 'mikro_orm_migrations',
         transactional: true,
+        snapshot: false, // migrations are written by hand; no schema snapshot file on disk
       },
     }),
   );

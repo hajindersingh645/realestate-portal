@@ -5,7 +5,7 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es';
 @Entity({ tableName: 'kit_probe' })
 export class KitProbe {
   @PrimaryKey({ type: 'uuid' })
-  id = randomUUID();
+  id: string = randomUUID();
 
   @Property({ type: 'string' })
   note!: string;

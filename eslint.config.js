@@ -45,6 +45,11 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
+  {
+    // Process entry points decide when the process ends.
+    files: ['**/server.ts', '**/migrate.ts'],
+    rules: { 'n/no-process-exit': 'off' },
+  },
   { files: ['**/*.js'], extends: [tseslint.configs.disableTypeChecked] },
   prettier,
 );

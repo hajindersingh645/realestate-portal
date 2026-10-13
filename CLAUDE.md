@@ -4,9 +4,10 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 
 ## Stack
 
-- Backend: Node.js (ESM), TypeScript, Fastify, TypeBox, MikroORM v7, Kysely, argon2
+- Backend: Node.js (ESM), TypeScript, Fastify, TypeBox, MikroORM v7, Kysely, argon2, jose
 - Frontend: React (Vite), React Router (SSR for public pages), TanStack Query, Zustand, Tailwind CSS
 - Infra: PostgreSQL, RabbitMQ (amqplib), Azure Blob Storage (Azurite locally), run via Colima
+- Tooling: Node.js 24 LTS; TypeScript 7 native for `tsc`, with `typescript` aliased to 6.0 for ESLint and other tools; ESLint, Prettier, Vitest
 
 ## Layout
 
@@ -39,9 +40,13 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 
 ## Commands
 
-- Infra up / down: `docker-compose up -d` / `docker-compose down`
+- Infra up / down: `docker-compose up -d` / `docker-compose down` (Colima must be running)
 - Install: `pnpm install`
-- Build: `pnpm run build`
-- Type check: `npx tsc --noEmit`
-- Tests: `npx vitest run` (frontend: `--environment jsdom`)
+- Migrate all services: `pnpm migrate`
+- Run all services: `pnpm dev` (gateway :3000, catalog-service :3002)
+- Lint and format check: `pnpm lint` · fix formatting: `pnpm format`
+- Type check: `pnpm typecheck`
+- Unit and route tests: `pnpm test`
+- Integration tests (need infra; stop `pnpm dev` first): `pnpm test:int`
+- Dev token for guarded routes: `pnpm --silent dev:token <permission> [...]`
 - Security scan: `snyk test`

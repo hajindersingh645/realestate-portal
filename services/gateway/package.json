@@ -1,0 +1,17 @@
+{
+  "name": "gateway",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../../.env --env-file=.env src/server.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.3.1",
+    "@fastify/helmet": "^13.1.2",
+    "@fastify/http-proxy": "^11.6.4",
+    "@fastify/rate-limit": "^11.2.1",
+    "@hanu/service-kit": "workspace:*",
+    "fastify": "^5.12.5"
+  }
+}

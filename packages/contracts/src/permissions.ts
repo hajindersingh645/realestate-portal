@@ -1,0 +1,36 @@
+// Source of truth for permission keys (architecture.md section 6.3).
+// Phase 1 seeds the identity `permissions` table from this list.
+export const PERMISSIONS = [
+  'requirement.create',
+  'requirement.manage_own',
+  'review.create',
+  'report.create',
+  'listing.enquire',
+  'billing.purchase',
+  'lead.view_feed',
+  'lead.unlock',
+  'lead.manage_pipeline',
+  'listing.create',
+  'listing.manage_own',
+  'profile.manage',
+  'team.manage',
+  'handshake.use',
+  'admin.kyc.review',
+  'admin.user.manage',
+  'admin.access.manage',
+  'admin.catalog.manage',
+  'admin.seo.manage',
+  'admin.lead.moderate',
+  'admin.lead.dispute.decide',
+  'admin.listing.moderate',
+  'admin.review.moderate',
+  'admin.billing.manage',
+  'admin.billing.refund',
+  'admin.points.adjust',
+  'admin.settings.manage',
+  'admin.notification.manage',
+  'admin.handshake.resolve',
+  'admin.audit.view',
+] as const;
+
+export type PermissionKey = (typeof PERMISSIONS)[number];

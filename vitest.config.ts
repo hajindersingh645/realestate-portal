@@ -2,9 +2,17 @@ import { defineConfig } from 'vitest/config';
 import { swcDecorators } from './vitest.swc.js';
 
 export default defineConfig({
-  plugins: [swcDecorators],
   test: {
-    include: ['**/*.test.ts'],
-    exclude: ['**/*.int.test.ts', '**/node_modules/**', '**/dist/**'],
+    projects: [
+      {
+        plugins: [swcDecorators],
+        test: {
+          name: 'services',
+          include: ['packages/**/*.test.ts', 'services/**/*.test.ts'],
+          exclude: ['**/*.int.test.ts', '**/node_modules/**', '**/dist/**'],
+        },
+      },
+      'apps/admin/vitest.config.ts',
+    ],
   },
 });

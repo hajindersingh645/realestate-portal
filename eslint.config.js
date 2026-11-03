@@ -1,5 +1,8 @@
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import reactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
 import nodePlugin from 'eslint-plugin-n';
 import security from 'eslint-plugin-security';
 import tseslint from 'typescript-eslint';
@@ -51,6 +54,25 @@ export default tseslint.config(
     // Process entry points decide when the process ends.
     files: ['**/server.ts', '**/migrate.ts', '**/seed.ts', '**/create-admin.ts'],
     rules: { 'n/no-process-exit': 'off' },
+  },
+  {
+    // The admin runs in the browser: React rules on, Node rules off.
+    files: ['apps/**/*.{ts,tsx}'],
+    extends: [reactHooks.configs.flat['recommended-latest'], jsxA11y.flatConfigs.recommended],
+    languageOptions: { globals: globals.browser },
+    rules: {
+      'n/no-unsupported-features/node-builtins': 'off',
+      'n/no-extraneous-import': 'off',
+      'n/no-process-env': 'off',
+    },
+  },
+  {
+    files: ['apps/**/*.test.{ts,tsx}', 'apps/**/test/**'],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+    },
   },
   { files: ['**/*.js'], extends: [tseslint.configs.disableTypeChecked] },
   prettier,

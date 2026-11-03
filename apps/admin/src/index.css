@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+
+/* The one accent colour. Change it here when the brand colour is chosen. */
+@theme {
+  --color-accent: #f97316;
+  --color-accent-hover: #ea580c;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply bg-white text-sm text-zinc-900 antialiased;
+}

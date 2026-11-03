@@ -8,6 +8,8 @@ export interface AppOptions {
   serviceName: string;
   logLevel?: string;
   readyChecks?: (() => Promise<void>)[];
+  /** Where log lines go; stdout when omitted. Tests pass a collector. */
+  logStream?: { write(line: string): void };
 }
 
 /** The body of every error response. Declare it in each route's `response` schema. */
@@ -18,6 +20,8 @@ export const ErrorBody = Type.Object({
 declare module 'fastify' {
   interface FastifyContextConfig {
     public?: boolean;
+    /** Any valid token, no particular permission (e.g. `GET /users/me`). */
+    authenticated?: boolean;
     permission?: string;
   }
 }
@@ -30,6 +34,10 @@ const REDACT = [
   '*.code',
   '*.password',
   '*.token',
+  // Event envelopes nest the secrets one level deeper (`{ envelope: { payload: { code } } }`).
+  '*.payload.phone',
+  '*.payload.code',
+  '*.payload.token',
 ];
 
 function clientError(error: unknown): { status: number; code: string; message: string } | null {
@@ -62,6 +70,7 @@ export function createApp(options: AppOptions) {
             level: options.logLevel ?? 'info',
             base: { service: options.serviceName },
             redact: REDACT,
+            ...(options.logStream === undefined ? {} : { stream: options.logStream }),
           },
     genReqId: (req) => {
       const header = req.headers['x-request-id'];

@@ -10,6 +10,9 @@ function build() {
   const app = createApp({ serviceName: 'test', logLevel: 'silent' });
   registerAuth(app, { publicKeyPem: keys.publicKeyPem });
   app.get('/open', { config: { public: true } }, () => ({ ok: true }));
+  app.get('/me', { config: { authenticated: true } }, (request) => ({
+    userId: request.auth?.userId,
+  }));
   app.get('/guarded', { config: { permission: 'lead.unlock' } }, (request) => ({
     userId: request.auth?.userId,
     accountId: request.auth?.accountId,
@@ -101,9 +104,29 @@ test('an unknown route, without a token, returns 404', async () => {
   expect(res.json()).toEqual({ error: { code: 'NOT_FOUND', message: 'Route not found' } });
 });
 
-test('registering a route, without permission or public, throws at registration', () => {
+test('registering a route, without permission, authenticated or public, throws at registration', () => {
   const app = createApp({ serviceName: 'test', logLevel: 'silent' });
   registerAuth(app, { publicKeyPem: keys.publicKeyPem });
 
-  expect(() => app.get('/forgot', () => ({ ok: true }))).toThrow(/permission or config\.public/);
+  expect(() => app.get('/forgot', () => ({ ok: true }))).toThrow(
+    /permission, config\.authenticated or config\.public/,
+  );
+});
+
+test('an authenticated route, with a valid token holding no permissions, is served', async () => {
+  const token = await signTestToken(keys.privateKey, { sub: 'user-1' });
+
+  const response = await build().inject({
+    url: '/me',
+    headers: { authorization: `Bearer ${token}` },
+  });
+
+  expect(response.statusCode).toBe(200);
+  expect(response.json()).toEqual({ userId: 'user-1' });
+});
+
+test('an authenticated route, without a token, returns 401', async () => {
+  const response = await build().inject({ url: '/me' });
+
+  expect(response.statusCode).toBe(401);
 });

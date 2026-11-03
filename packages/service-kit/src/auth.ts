@@ -20,9 +20,13 @@ export function registerAuth(app: FastifyInstance, options: { publicKeyPem: stri
 
   app.addHook('onRoute', (route) => {
     const config = route.config;
-    if (config?.public !== true && typeof config?.permission !== 'string') {
+    if (
+      config?.public !== true &&
+      config?.authenticated !== true &&
+      typeof config?.permission !== 'string'
+    ) {
       throw new Error(
-        `Route ${String(route.method)} ${route.url} must declare config.permission or config.public`,
+        `Route ${String(route.method)} ${route.url} must declare config.permission, config.authenticated or config.public`,
       );
     }
   });

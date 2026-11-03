@@ -9,7 +9,7 @@ import {
   type RabbitChannel,
   type RabbitConnection,
 } from './rabbit.js';
-import { subscribe } from './subscribe.js';
+import { subscribe, subscribeStateless } from './subscribe.js';
 import { TEST_DB_URL, TEST_RABBIT_URL, waitFor } from './testing.js';
 
 const EXCHANGE = 'kittest.events';
@@ -166,4 +166,52 @@ test('subscribe, when a message is not a valid envelope, dead-letters it at once
   expect(seen).toEqual([goodId]);
   const dead = await waitForDeadLetter();
   expect(dead).toBe('this is not json');
+});
+
+test('subscribeStateless, with two subscribers, delivers each event to both', async () => {
+  const seen: string[][] = [[], []];
+  const subscriptions = await Promise.all(
+    seen.map((list) =>
+      subscribeStateless({
+        connection,
+        exchange: EXCHANGE,
+        keys: ['probe.created'],
+        handler: (envelope) => {
+          list.push(envelope.eventId);
+        },
+      }),
+    ),
+  );
+  const eventId = randomUUID();
+
+  publish(eventId);
+
+  await waitFor(() => seen.every((list) => list.includes(eventId)));
+  await Promise.all(subscriptions.map((s) => s.close()));
+  expect(seen).toEqual([[eventId], [eventId]]);
+});
+
+test('subscribeStateless, when the handler throws, reports it and keeps serving', async () => {
+  const errors: unknown[] = [];
+  const seen: string[] = [];
+  const first = randomUUID();
+  const second = randomUUID();
+  const stateless = await subscribeStateless({
+    connection,
+    exchange: EXCHANGE,
+    keys: ['probe.created'],
+    handler: (envelope) => {
+      if (envelope.eventId === first) throw new Error('boom');
+      seen.push(envelope.eventId);
+    },
+    onError: (error) => errors.push(error),
+  });
+
+  publish(first);
+  publish(second);
+
+  await waitFor(() => seen.includes(second));
+  await stateless.close();
+  expect(errors).toHaveLength(1);
+  expect(seen).toEqual([second]);
 });

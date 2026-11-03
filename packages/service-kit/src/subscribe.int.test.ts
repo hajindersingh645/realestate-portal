@@ -215,3 +215,38 @@ test('subscribeStateless, when the handler throws, reports it and keeps serving'
   expect(errors).toHaveLength(1);
   expect(seen).toEqual([second]);
 });
+
+test('subscribe, bound to two exchanges, receives events from both', async () => {
+  const other = 'kittest.other.events';
+  await assertExchanges(connection, [other]);
+  const seen: string[] = [];
+  subscription = await subscribe({
+    orm,
+    connection,
+    queue,
+    exchange: [EXCHANGE, other],
+    keys: ['probe.created'],
+    handler: (envelope) => {
+      seen.push(envelope.eventId);
+      return Promise.resolve();
+    },
+  });
+  const [first, second] = [randomUUID(), randomUUID()];
+
+  publish(first);
+  channel.publish(
+    other,
+    'probe.created',
+    Buffer.from(
+      JSON.stringify({
+        eventId: second,
+        timestamp: new Date().toISOString(),
+        producer: 'kit-test',
+        payload: {},
+      }),
+    ),
+  );
+
+  await waitFor(() => seen.length === 2);
+  expect(seen.sort()).toEqual([first, second].sort());
+});

@@ -7,7 +7,8 @@ export interface SubscribeOptions<T> {
   orm: Orm;
   connection: RabbitConnection;
   queue: string;
-  exchange: string;
+  /** One exchange, or several (e.g. `audit.recorded` arrives on every service's exchange). */
+  exchange: string | string[];
   keys: string[];
   handler: (envelope: EventEnvelope<T>, em: Em) => Promise<void>;
   onError?: (error: unknown, eventId?: string) => void;
@@ -31,7 +32,9 @@ export async function subscribe<T = unknown>(
   channel.on('error', (error: unknown) => options.onError?.(error));
   await channel.prefetch(10);
 
-  await channel.assertExchange(options.exchange, 'topic', { durable: true });
+  const exchanges = Array.isArray(options.exchange) ? options.exchange : [options.exchange];
+  for (const exchange of exchanges)
+    await channel.assertExchange(exchange, 'topic', { durable: true });
   await channel.assertExchange(EXCHANGES.dlx, 'topic', { durable: true });
   await channel.assertQueue(dlq, { durable: true, arguments: { 'x-queue-type': 'quorum' } });
   await channel.bindQueue(dlq, EXCHANGES.dlx, queue);
@@ -44,7 +47,9 @@ export async function subscribe<T = unknown>(
       'x-dead-letter-routing-key': queue,
     },
   });
-  for (const key of options.keys) await channel.bindQueue(queue, options.exchange, key);
+  for (const exchange of exchanges) {
+    for (const key of options.keys) await channel.bindQueue(queue, exchange, key);
+  }
 
   let closed = false;
 

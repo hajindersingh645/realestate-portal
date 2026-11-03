@@ -2,6 +2,7 @@ import cookie from '@fastify/cookie';
 import { createApp, registerAuth, sql, type App, type Orm } from '@hanu/service-kit';
 import type { IdentityConfig } from './load-config.js';
 import { registerAccessRoutes } from './modules/access/index.js';
+import { registerAuditLogRoutes } from './modules/audit-logs/index.js';
 import { registerAuthRoutes } from './modules/auth/index.js';
 import { registerStaffAuthRoutes } from './modules/staff-auth/index.js';
 import { registerAdminUserRoutes, registerUserRoutes } from './modules/users/index.js';
@@ -34,6 +35,7 @@ export function buildApp(deps: { orm: Orm; config: IdentityConfig }): App {
   registerStaffAuthRoutes(app, { orm, auth });
   registerUserRoutes(app, { orm, serviceName: config.serviceName });
   registerAccessRoutes(app, { orm, serviceName: config.serviceName });
+  registerAuditLogRoutes(app, { orm });
   registerAdminUserRoutes(app, {
     orm,
     serviceName: config.serviceName,

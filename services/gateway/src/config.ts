@@ -9,6 +9,9 @@ export interface GatewayConfig {
 // One line per service. Add a row when a service is added.
 const ROUTE_ENV: { prefix: string; env: string }[] = [
   { prefix: '/api/v1/catalog', env: 'CATALOG_URL' },
+  { prefix: '/api/v1/auth', env: 'IDENTITY_URL' },
+  { prefix: '/api/v1/users', env: 'IDENTITY_URL' },
+  { prefix: '/api/v1/admin/identity', env: 'IDENTITY_URL' },
 ];
 
 export function loadGatewayConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig {

@@ -1,5 +1,9 @@
 import { Route, Routes } from 'react-router';
 import { LoginPage } from './auth/LoginPage';
+import { LocationsPage } from './catalog/locations/LocationsPage';
+import { LookupsPage } from './catalog/lookups/LookupsPage';
+import { PropertyTypesPage } from './catalog/property-types/PropertyTypesPage';
+import { UnitConversionsPage } from './catalog/unit-conversions/UnitConversionsPage';
 import { RequireSession } from './auth/RequireSession';
 import { SetupPage } from './auth/SetupPage';
 import { NotFoundPage } from './NotFoundPage';
@@ -16,6 +20,10 @@ export function AppRoutes() {
       <Route element={<RequireSession />}>
         <Route element={<AppShell />}>
           <Route path={PATHS.home} element={<HomePage />} />
+          <Route path={PATHS.locations} element={<LocationsPage />} />
+          <Route path={PATHS.propertyTypes} element={<PropertyTypesPage />} />
+          <Route path={PATHS.lookups} element={<LookupsPage />} />
+          <Route path={PATHS.unitConversions} element={<UnitConversionsPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />

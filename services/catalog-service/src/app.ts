@@ -7,6 +7,7 @@ import {
   type ServiceConfig,
 } from '@hanu/service-kit';
 import { registerDemoRoutes } from './modules/demo/index.js';
+import { registerLocationRoutes } from './modules/locations/index.js';
 import { registerLookupRoutes } from './modules/lookups/index.js';
 import { registerPropertyTypeRoutes } from './modules/property-types/index.js';
 
@@ -24,5 +25,6 @@ export function buildApp(deps: { orm: Orm; config: ServiceConfig }): App {
   registerDemoRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
   registerLookupRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
   registerPropertyTypeRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
+  registerLocationRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
   return app;
 }

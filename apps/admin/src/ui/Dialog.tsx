@@ -10,6 +10,8 @@ export interface DialogProps {
   footer?: ReactNode;
   /** `drawer` slides in from the left (phone menu); `center` is a normal dialog. */
   variant?: 'center' | 'drawer';
+  /** False for dialogs that must be closed with their own button (e.g. a link shown only once). */
+  dismissible?: boolean;
 }
 
 const FOCUSABLE =
@@ -26,13 +28,14 @@ export function Dialog({
   children,
   footer,
   variant = 'center',
+  dismissible = true,
 }: DialogProps) {
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
 
   // An effect event, so the effect below does not re-run (and steal focus) when `onClose` changes.
   const close = useEffectEvent(() => {
-    onClose();
+    if (dismissible) onClose();
   });
 
   useEffect(() => {
@@ -76,7 +79,11 @@ export function Dialog({
 
   return createPortal(
     <div className="fixed inset-0 z-50">
-      <div aria-hidden="true" className="absolute inset-0 bg-zinc-900/30" onClick={onClose} />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-zinc-900/30"
+        onClick={dismissible ? onClose : undefined}
+      />
       <div
         ref={panel}
         role="dialog"
@@ -89,14 +96,16 @@ export function Dialog({
           <h2 id={titleId} className="text-base font-semibold">
             {title}
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-md p-1 text-zinc-500 hover:bg-zinc-100"
-          >
-            <X aria-hidden="true" className="size-4" />
-          </button>
+          {dismissible && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="rounded-md p-1 text-zinc-500 hover:bg-zinc-100"
+            >
+              <X aria-hidden="true" className="size-4" />
+            </button>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
         {footer !== undefined && (

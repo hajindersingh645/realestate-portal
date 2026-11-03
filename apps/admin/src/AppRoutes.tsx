@@ -1,4 +1,7 @@
 import { Route, Routes } from 'react-router';
+import { RolesPage } from './access/roles/RolesPage';
+import { UserDetailPage } from './access/users/UserDetailPage';
+import { UsersPage } from './access/users/UsersPage';
 import { LoginPage } from './auth/LoginPage';
 import { LocationsPage } from './catalog/locations/LocationsPage';
 import { LookupsPage } from './catalog/lookups/LookupsPage';
@@ -24,6 +27,9 @@ export function AppRoutes() {
           <Route path={PATHS.propertyTypes} element={<PropertyTypesPage />} />
           <Route path={PATHS.lookups} element={<LookupsPage />} />
           <Route path={PATHS.unitConversions} element={<UnitConversionsPage />} />
+          <Route path={PATHS.users} element={<UsersPage />} />
+          <Route path="/access/users/:id" element={<UserDetailPage />} />
+          <Route path={PATHS.roles} element={<RolesPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />

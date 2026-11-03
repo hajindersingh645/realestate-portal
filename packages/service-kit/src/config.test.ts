@@ -39,3 +39,14 @@ test('loadConfig, when several variables are missing or blank, names all of them
 test('loadConfig, when PORT is not a number, throws', () => {
   expect(() => loadConfig({ ...full, PORT: 'abc' })).toThrow(/PORT/);
 });
+
+test('loadConfig, when MIGRATION_DATABASE_URL is not set or blank, leaves it undefined', () => {
+  expect(loadConfig(full).migrationDatabaseUrl).toBeUndefined();
+  expect(loadConfig({ ...full, MIGRATION_DATABASE_URL: ' ' }).migrationDatabaseUrl).toBeUndefined();
+});
+
+test('loadConfig, when MIGRATION_DATABASE_URL is set, returns it', () => {
+  const url = 'postgresql://owner:p@localhost:5433/db';
+
+  expect(loadConfig({ ...full, MIGRATION_DATABASE_URL: url }).migrationDatabaseUrl).toBe(url);
+});

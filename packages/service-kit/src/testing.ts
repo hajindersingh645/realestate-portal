@@ -26,6 +26,11 @@ export const TEST_DB_URL =
   process.env.TEST_DATABASE_URL ??
   'postgresql://svc_kit_test:svc_kit_test@localhost:5433/real_estate_test';
 
+/** The kit's runtime role: data access only, no UPDATE or DELETE on append-only tables. */
+export const TEST_APP_DB_URL =
+  process.env.TEST_APP_DATABASE_URL ??
+  'postgresql://svc_kit_test_app:svc_kit_test_app@localhost:5433/real_estate_test';
+
 export const TEST_RABBIT_URL = process.env.TEST_RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672';
 
 export async function waitFor(

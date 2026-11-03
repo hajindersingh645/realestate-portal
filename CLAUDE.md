@@ -36,7 +36,7 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 
 ## Local defaults
 
-- PostgreSQL: `postgresql://postgres:postgres@localhost:5433/real_estate` (one schema and role per service; host port 5433 so it does not clash with a Postgres already on 5432)
+- PostgreSQL: `postgresql://postgres:postgres@localhost:5433/real_estate` (host port 5433 so it does not clash with a Postgres already on 5432). One schema and two roles per service: `svc_<s>` owns the schema and runs migrations (`MIGRATION_DATABASE_URL`); `svc_<s>_app` is what the service runs as (`DATABASE_URL`) and cannot update or delete append-only tables
 - RabbitMQ: `amqp://guest:guest@localhost:5672` · management UI `http://localhost:15672`
 
 ## Commands

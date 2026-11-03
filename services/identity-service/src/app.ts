@@ -1,16 +1,34 @@
+import cookie from '@fastify/cookie';
 import { createApp, registerAuth, sql, type App, type Orm } from '@hanu/service-kit';
 import type { IdentityConfig } from './load-config.js';
+import { registerAuthRoutes } from './modules/auth/index.js';
+import { registerUserRoutes } from './modules/users/index.js';
+import { loadSigningKey } from './tokens.js';
 
 export function buildApp(deps: { orm: Orm; config: IdentityConfig }): App {
+  const { config, orm } = deps;
   const app = createApp({
-    serviceName: deps.config.serviceName,
-    logLevel: deps.config.logLevel,
+    serviceName: config.serviceName,
+    logLevel: config.logLevel,
     readyChecks: [
       async () => {
-        await sql(deps.orm.em.fork(), 'select 1');
+        await sql(orm.em.fork(), 'select 1');
       },
     ],
   });
-  registerAuth(app, { publicKeyPem: deps.config.jwtPublicKey });
+  void app.register(cookie);
+  registerAuth(app, { publicKeyPem: config.jwtPublicKey });
+  const auth = {
+    otp: {
+      otpSecret: config.otpSecret,
+      locale: config.platform.locale,
+      producer: config.serviceName,
+    },
+    signingKey: loadSigningKey(config.jwtPrivateKey),
+    country: config.platform.country,
+    serviceName: config.serviceName,
+  };
+  registerAuthRoutes(app, { orm, auth });
+  registerUserRoutes(app, { orm, serviceName: config.serviceName });
   return app;
 }

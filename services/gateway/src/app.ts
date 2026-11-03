@@ -6,6 +6,8 @@ import { createApp, NotFoundError, type App } from '@hanu/service-kit';
 
 export interface GatewayRoute {
   prefix: string;
+  /** Path prefix the upstream sees; '' strips `prefix`. */
+  rewritePrefix: string;
   upstream: string;
 }
 
@@ -49,6 +51,7 @@ export async function buildGateway(options: GatewayOptions): Promise<App> {
     await app.register(proxy, {
       upstream: route.upstream,
       prefix: route.prefix,
+      rewritePrefix: route.rewritePrefix,
       replyOptions: {
         rewriteRequestHeaders: (request, headers) => ({ ...headers, 'x-request-id': request.id }),
         // The upstream could not be reached or did not answer. Log the cause, tell the client only that.

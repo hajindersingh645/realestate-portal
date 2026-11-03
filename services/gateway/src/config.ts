@@ -3,15 +3,17 @@ export interface GatewayConfig {
   logLevel: string;
   corsOrigins: string[];
   rateLimitMax: number;
-  routes: { prefix: string; upstream: string }[];
+  /** `rewritePrefix`: what the upstream sees instead of `prefix` (default: nothing, prefix removed). */
+  routes: { prefix: string; upstream: string; rewritePrefix: string }[];
 }
 
-// One line per service. Add a row when a service is added.
-const ROUTE_ENV: { prefix: string; env: string }[] = [
+// One line per prefix. Add a row when a service is added. A service that owns several prefixes
+// keeps them (rewritePrefix) so its own routes do not collide.
+const ROUTE_ENV: { prefix: string; env: string; rewritePrefix?: string }[] = [
   { prefix: '/api/v1/catalog', env: 'CATALOG_URL' },
-  { prefix: '/api/v1/auth', env: 'IDENTITY_URL' },
-  { prefix: '/api/v1/users', env: 'IDENTITY_URL' },
-  { prefix: '/api/v1/admin/identity', env: 'IDENTITY_URL' },
+  { prefix: '/api/v1/auth', env: 'IDENTITY_URL', rewritePrefix: '/auth' },
+  { prefix: '/api/v1/users', env: 'IDENTITY_URL', rewritePrefix: '/users' },
+  { prefix: '/api/v1/admin/identity', env: 'IDENTITY_URL', rewritePrefix: '/admin/identity' },
 ];
 
 export function loadGatewayConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig {
@@ -29,7 +31,11 @@ export function loadGatewayConfig(env: NodeJS.ProcessEnv = process.env): Gateway
     .split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin !== '');
-  const routes = ROUTE_ENV.map((route) => ({ prefix: route.prefix, upstream: read(route.env) }));
+  const routes = ROUTE_ENV.map((route) => ({
+    prefix: route.prefix,
+    upstream: read(route.env),
+    rewritePrefix: route.rewritePrefix ?? '',
+  }));
 
   if (missing.length > 0) {
     throw new Error(`Missing environment variables: ${missing.join(', ')}`);

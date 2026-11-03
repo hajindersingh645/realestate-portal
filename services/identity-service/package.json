@@ -9,6 +9,7 @@
     "migration:create": "MIKRO_ORM_CLI_TS_CONFIG_PATH=../../tsconfig.json node --env-file=../../.env --env-file=.env node_modules/@mikro-orm/cli/cli.js migration:create --config ./mikro-orm.config.ts"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.1.5",
     "@hanu/contracts": "workspace:*",
     "@hanu/service-kit": "workspace:*",
     "@mikro-orm/core": "7.2.4",

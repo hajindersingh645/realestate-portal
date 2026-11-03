@@ -21,7 +21,10 @@ afterAll(async () => {
 
 function build() {
   return buildGateway({
-    routes: [{ prefix: '/api/v1/catalog', upstream: upstreamUrl }],
+    routes: [
+      { prefix: '/api/v1/catalog', upstream: upstreamUrl, rewritePrefix: '' },
+      { prefix: '/api/v1/auth', upstream: upstreamUrl, rewritePrefix: '/auth' },
+    ],
     corsOrigins: [],
     rateLimitMax: 1000,
     logLevel: 'silent',
@@ -35,6 +38,15 @@ test('a request under a route prefix, always, reaches the upstream without the p
 
   expect(res.statusCode).toBe(200);
   expect(res.json().path).toBe('/demo/pings/abc?x=1');
+});
+
+test('a request under a prefix with rewritePrefix, always, reaches the upstream with that prefix', async () => {
+  const app = await build();
+
+  const res = await app.inject({ method: 'GET', url: '/api/v1/auth/login' });
+
+  expect(res.statusCode).toBe(200);
+  expect(res.json().path).toBe('/auth/login');
 });
 
 test('a forwarded request, always, carries one request id to the upstream and back', async () => {

@@ -15,10 +15,14 @@ test('loadGatewayConfig, when every variable is set, returns routes and trimmed 
   expect(config.port).toBe(3000);
   expect(config.corsOrigins).toEqual(['http://localhost:5173', 'http://localhost:5174']);
   expect(config.routes).toEqual([
-    { prefix: '/api/v1/catalog', upstream: 'http://localhost:3002' },
-    { prefix: '/api/v1/auth', upstream: 'http://localhost:3001' },
-    { prefix: '/api/v1/users', upstream: 'http://localhost:3001' },
-    { prefix: '/api/v1/admin/identity', upstream: 'http://localhost:3001' },
+    { prefix: '/api/v1/catalog', upstream: 'http://localhost:3002', rewritePrefix: '' },
+    { prefix: '/api/v1/auth', upstream: 'http://localhost:3001', rewritePrefix: '/auth' },
+    { prefix: '/api/v1/users', upstream: 'http://localhost:3001', rewritePrefix: '/users' },
+    {
+      prefix: '/api/v1/admin/identity',
+      upstream: 'http://localhost:3001',
+      rewritePrefix: '/admin/identity',
+    },
   ]);
 });
 

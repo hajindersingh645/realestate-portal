@@ -1,3 +1,4 @@
+export { effectivePermissions } from './effective-permissions.js';
 export {
   Permission,
   Role,

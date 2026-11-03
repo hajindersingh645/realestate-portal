@@ -10,6 +10,7 @@ import { registerDemoRoutes } from './modules/demo/index.js';
 import { registerLocationRoutes } from './modules/locations/index.js';
 import { registerLookupRoutes } from './modules/lookups/index.js';
 import { registerPropertyTypeRoutes } from './modules/property-types/index.js';
+import { registerReferenceRoutes } from './modules/reference/index.js';
 import { registerUnitConversionRoutes } from './modules/unit-conversions/index.js';
 
 export function buildApp(deps: { orm: Orm; config: ServiceConfig }): App {
@@ -28,5 +29,6 @@ export function buildApp(deps: { orm: Orm; config: ServiceConfig }): App {
   registerPropertyTypeRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
   registerLocationRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
   registerUnitConversionRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
+  registerReferenceRoutes(app, { orm: deps.orm, platform: deps.config.platform });
   return app;
 }

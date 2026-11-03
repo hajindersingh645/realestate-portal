@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch --env-file=../../.env --env-file=.env src/server.ts",
     "migrate": "tsx --env-file=../../.env --env-file=.env src/migrate.ts",
-    "migration:create": "MIKRO_ORM_CLI_TS_CONFIG_PATH=../../tsconfig.json node --env-file=../../.env --env-file=.env node_modules/@mikro-orm/cli/cli.js migration:create --config ./mikro-orm.config.ts"
+    "migration:create": "MIKRO_ORM_CLI_TS_CONFIG_PATH=../../tsconfig.json node --env-file=../../.env --env-file=.env node_modules/@mikro-orm/cli/cli.js migration:create --config ./mikro-orm.config.ts",
+    "seed": "tsx --env-file=../../.env --env-file=.env src/seed.ts"
   },
   "dependencies": {
     "@hanu/contracts": "workspace:*",

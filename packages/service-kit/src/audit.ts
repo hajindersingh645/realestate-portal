@@ -1,5 +1,7 @@
 import { ROUTING_KEYS, type AuditRecordedPayload } from '@hanu/contracts';
+import type { FastifyRequest } from 'fastify';
 import type { Em } from './db.js';
+import { UnauthorizedError } from './errors.js';
 import { outboxAdd } from './outbox.js';
 
 /** Who did it. Routes build this from the request; scripts pass `userId: null`. */
@@ -7,6 +9,12 @@ export interface Actor {
   service: string;
   userId: string | null;
   ip: string | null;
+}
+
+/** The actor of a guarded route: the token's user and the client IP. */
+export function actorOf(request: FastifyRequest, service: string): Actor {
+  if (request.auth === undefined) throw new UnauthorizedError();
+  return { service, userId: request.auth.userId, ip: request.ip };
 }
 
 export interface AuditEntry {

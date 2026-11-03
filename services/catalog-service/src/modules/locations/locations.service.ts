@@ -7,6 +7,7 @@ import {
   ValidationError,
   withDbErrors,
   type Em,
+  type Actor,
 } from '@hanu/service-kit';
 import { emitReferenceChanged } from '../../reference-changed.js';
 import { Location } from './location.entity.js';
@@ -91,7 +92,7 @@ export async function listLocations(
 export async function createLocation(
   em: Em,
   input: CreateLocationInput,
-  producer: string,
+  actor: Actor,
 ): Promise<LocationView> {
   const view: LocationView = {
     id: randomUUID(),
@@ -134,7 +135,10 @@ export async function createLocation(
           ],
         );
         if (rows.length === 0) throw new ValidationError(BAD_PARENT);
-        await emitReferenceChanged(tx, producer, 'location', view.id);
+        await emitReferenceChanged(tx, actor, 'location', view.id, {
+          action: 'created',
+          after: view,
+        });
         return view;
       }),
     {
@@ -150,24 +154,30 @@ export async function updateLocation(
   em: Em,
   id: string,
   patch: UpdateLocationInput,
-  producer: string,
+  actor: Actor,
 ): Promise<LocationView> {
   return await em.transactional(async (tx) => {
     const location = await tx.findOne(Location, { id });
     if (location === null) throw new NotFoundError('Location not found');
+    const before = toLocationView(location);
     if (patch.name !== undefined) location.name = patch.name;
     if (patch.lat !== undefined) location.lat = patch.lat;
     if (patch.lng !== undefined) location.lng = patch.lng;
     if (patch.sort !== undefined) location.sort = patch.sort;
     if (patch.isActive !== undefined) location.isActive = patch.isActive;
     await tx.flush();
-    await emitReferenceChanged(tx, producer, 'location', location.id);
-    return toLocationView(location);
+    const after = toLocationView(location);
+    await emitReferenceChanged(tx, actor, 'location', location.id, {
+      action: 'updated',
+      before,
+      after,
+    });
+    return after;
   });
 }
 
 /** Soft delete, refused while a live child (city or locality) still sits under this location. */
-export async function deleteLocation(em: Em, id: string, producer: string): Promise<void> {
+export async function deleteLocation(em: Em, id: string, actor: Actor): Promise<void> {
   await em.transactional(async (tx) => {
     const rows = await sql(
       tx,
@@ -184,6 +194,6 @@ export async function deleteLocation(em: Em, id: string, producer: string): Prom
       if (live.length > 0) throw new ConflictError('Delete the places under it first');
       throw new NotFoundError('Location not found');
     }
-    await emitReferenceChanged(tx, producer, 'location', id);
+    await emitReferenceChanged(tx, actor, 'location', id, { action: 'deleted' });
   });
 }

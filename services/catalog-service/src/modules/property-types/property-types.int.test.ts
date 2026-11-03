@@ -12,7 +12,7 @@ import {
 const DB_URL =
   process.env.TEST_CATALOG_DATABASE_URL ??
   'postgresql://svc_catalog:svc_catalog@localhost:5433/real_estate_test';
-const P = 'catalog-service';
+const P = { service: 'catalog-service', userId: null, ip: null };
 
 let orm: Orm;
 
@@ -44,7 +44,9 @@ async function commercialWithShop(): Promise<{ parentId: string; childId: string
 }
 
 async function outboxCount(): Promise<number> {
-  return (await sql(orm.em.fork(), 'select id from outbox_events')).length;
+  return (
+    await sql(orm.em.fork(), "select id from outbox_events where routing_key = 'reference.changed'")
+  ).length;
 }
 
 test('createPropertyType, with a parent, saves the child under it and emits an event', async () => {

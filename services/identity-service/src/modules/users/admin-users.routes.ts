@@ -1,6 +1,5 @@
-import { ErrorBody, type App, type Orm } from '@hanu/service-kit';
+import { ErrorBody, type App, type Orm, actorOf } from '@hanu/service-kit';
 import { Type } from 'typebox';
-import { actorOf } from '../../actor.js';
 import { phoneOrThrow } from '../auth/index.js';
 import { getUserDetail, listUsers, setUserStatus } from './admin-users.service.js';
 import {

@@ -13,7 +13,7 @@ import {
 const DB_URL =
   process.env.TEST_CATALOG_DATABASE_URL ??
   'postgresql://svc_catalog:svc_catalog@localhost:5433/real_estate_test';
-const P = 'catalog-service';
+const P = { service: 'catalog-service', userId: null, ip: null };
 
 let orm: Orm;
 
@@ -43,7 +43,9 @@ async function localityIn(parentId: string, slug = 'vip-road'): Promise<Location
 }
 
 async function outboxCount(): Promise<number> {
-  return (await sql(orm.em.fork(), 'select id from outbox_events')).length;
+  return (
+    await sql(orm.em.fork(), "select id from outbox_events where routing_key = 'reference.changed'")
+  ).length;
 }
 
 test('createLocation, building state then city then locality, saves the chain and three events', async () => {

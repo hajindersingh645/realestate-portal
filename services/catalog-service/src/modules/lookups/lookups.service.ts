@@ -1,4 +1,4 @@
-import { NotFoundError, sql, withDbErrors, type Em } from '@hanu/service-kit';
+import { NotFoundError, sql, withDbErrors, type Em, type Actor } from '@hanu/service-kit';
 import { emitReferenceChanged } from '../../reference-changed.js';
 import { Lookup } from './lookup.entity.js';
 
@@ -58,7 +58,7 @@ export async function listLookups(
 export async function createLookup(
   em: Em,
   input: CreateLookupInput,
-  producer: string,
+  actor: Actor,
 ): Promise<LookupView> {
   return await withDbErrors(
     () =>
@@ -71,8 +71,12 @@ export async function createLookup(
         lookup.sort = input.sort ?? 0;
         tx.persist(lookup);
         await tx.flush();
-        await emitReferenceChanged(tx, producer, 'lookup', lookup.id);
-        return toLookupView(lookup);
+        const view = toLookupView(lookup);
+        await emitReferenceChanged(tx, actor, 'lookup', lookup.id, {
+          action: 'created',
+          after: view,
+        });
+        return view;
       }),
     { unique: 'A lookup with this group and code already exists' },
   );
@@ -82,23 +86,29 @@ export async function updateLookup(
   em: Em,
   id: string,
   patch: UpdateLookupInput,
-  producer: string,
+  actor: Actor,
 ): Promise<LookupView> {
   return await em.transactional(async (tx) => {
     const lookup = await tx.findOne(Lookup, { id });
     if (lookup === null) throw new NotFoundError('Lookup not found');
+    const before = toLookupView(lookup);
     if (patch.label !== undefined) lookup.label = patch.label;
     if (patch.meta !== undefined) lookup.meta = patch.meta;
     if (patch.sort !== undefined) lookup.sort = patch.sort;
     if (patch.isActive !== undefined) lookup.isActive = patch.isActive;
     await tx.flush();
-    await emitReferenceChanged(tx, producer, 'lookup', lookup.id);
-    return toLookupView(lookup);
+    const after = toLookupView(lookup);
+    await emitReferenceChanged(tx, actor, 'lookup', lookup.id, {
+      action: 'updated',
+      before,
+      after,
+    });
+    return after;
   });
 }
 
 /** Soft delete. The `where` makes a second delete of the same row a 404. */
-export async function deleteLookup(em: Em, id: string, producer: string): Promise<void> {
+export async function deleteLookup(em: Em, id: string, actor: Actor): Promise<void> {
   await em.transactional(async (tx) => {
     const rows = await sql(
       tx,
@@ -107,6 +117,6 @@ export async function deleteLookup(em: Em, id: string, producer: string): Promis
       [id],
     );
     if (rows.length === 0) throw new NotFoundError('Lookup not found');
-    await emitReferenceChanged(tx, producer, 'lookup', id);
+    await emitReferenceChanged(tx, actor, 'lookup', id, { action: 'deleted' });
   });
 }

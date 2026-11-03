@@ -58,7 +58,12 @@ test('runSeed, on an empty catalog, inserts everything and one reference.changed
   const reference = await getReference(orm.em.fork(), platform);
   expect(reference.locations.filter((location) => location.type === 'city')).toHaveLength(6);
   expect(reference.locations.filter((location) => location.type === 'state')).toHaveLength(3);
-  expect(await sql(orm.em.fork(), 'select id from outbox_events')).toHaveLength(1);
+  expect(
+    await sql(
+      orm.em.fork(),
+      "select id from outbox_events where routing_key = 'reference.changed'",
+    ),
+  ).toHaveLength(1);
 });
 
 test('runSeed, run a second time, inserts nothing and emits nothing', async () => {
@@ -68,7 +73,12 @@ test('runSeed, run a second time, inserts nothing and emits nothing', async () =
   const second = await seed();
 
   expect(second).toEqual({ locations: 0, propertyTypes: 0, lookups: 0, unitConversions: 0 });
-  expect(await sql(orm.em.fork(), 'select id from outbox_events')).toHaveLength(0);
+  expect(
+    await sql(
+      orm.em.fork(),
+      "select id from outbox_events where routing_key = 'reference.changed'",
+    ),
+  ).toHaveLength(0);
 });
 
 test('runSeed, after an admin renamed a seeded row, leaves the admin edit alone', async () => {

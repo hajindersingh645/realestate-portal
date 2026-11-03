@@ -76,7 +76,7 @@ test('POST /admin/lookups, with a valid body, returns 201 and the new lookup', a
   expect(service.createLookup).toHaveBeenCalledWith(
     expect.anything(),
     { group: 'bhk', code: '2_bhk', label: '2 BHK', sort: 2 },
-    'catalog-service',
+    expect.objectContaining({ service: 'catalog-service' }),
   );
 });
 
@@ -170,7 +170,11 @@ test('DELETE /admin/lookups/:id, when the lookup exists, returns 204 with no bod
 
   expect(res.statusCode).toBe(204);
   expect(res.body).toBe('');
-  expect(service.deleteLookup).toHaveBeenCalledWith(expect.anything(), ID, 'catalog-service');
+  expect(service.deleteLookup).toHaveBeenCalledWith(
+    expect.anything(),
+    ID,
+    expect.objectContaining({ service: 'catalog-service' }),
+  );
 });
 
 test('DELETE /admin/lookups/:id, when the lookup is unknown or already deleted, returns 404', async () => {

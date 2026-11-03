@@ -6,6 +6,7 @@ import {
   ValidationError,
   withDbErrors,
   type Em,
+  type Actor,
 } from '@hanu/service-kit';
 import { emitReferenceChanged } from '../../reference-changed.js';
 import { PropertyType } from './property-type.entity.js';
@@ -64,7 +65,7 @@ export async function listPropertyTypes(
 export async function createPropertyType(
   em: Em,
   input: CreatePropertyTypeInput,
-  producer: string,
+  actor: Actor,
 ): Promise<PropertyTypeView> {
   const view: PropertyTypeView = {
     id: randomUUID(),
@@ -99,7 +100,10 @@ export async function createPropertyType(
         if (rows.length === 0) {
           throw new ValidationError('The parent property type does not exist');
         }
-        await emitReferenceChanged(tx, producer, 'property_type', view.id);
+        await emitReferenceChanged(tx, actor, 'property_type', view.id, {
+          action: 'created',
+          after: view,
+        });
         return view;
       }),
     {
@@ -113,22 +117,28 @@ export async function updatePropertyType(
   em: Em,
   id: string,
   patch: UpdatePropertyTypeInput,
-  producer: string,
+  actor: Actor,
 ): Promise<PropertyTypeView> {
   return await em.transactional(async (tx) => {
     const type = await tx.findOne(PropertyType, { id });
     if (type === null) throw new NotFoundError('Property type not found');
+    const before = toPropertyTypeView(type);
     if (patch.name !== undefined) type.name = patch.name;
     if (patch.sort !== undefined) type.sort = patch.sort;
     if (patch.isActive !== undefined) type.isActive = patch.isActive;
     await tx.flush();
-    await emitReferenceChanged(tx, producer, 'property_type', type.id);
-    return toPropertyTypeView(type);
+    const after = toPropertyTypeView(type);
+    await emitReferenceChanged(tx, actor, 'property_type', type.id, {
+      action: 'updated',
+      before,
+      after,
+    });
+    return after;
   });
 }
 
 /** Soft delete, refused while a live sub-type still points at this one. */
-export async function deletePropertyType(em: Em, id: string, producer: string): Promise<void> {
+export async function deletePropertyType(em: Em, id: string, actor: Actor): Promise<void> {
   await em.transactional(async (tx) => {
     const rows = await sql(
       tx,
@@ -147,6 +157,6 @@ export async function deletePropertyType(em: Em, id: string, producer: string): 
       if (live.length > 0) throw new ConflictError('Delete or move its sub-types first');
       throw new NotFoundError('Property type not found');
     }
-    await emitReferenceChanged(tx, producer, 'property_type', id);
+    await emitReferenceChanged(tx, actor, 'property_type', id, { action: 'deleted' });
   });
 }

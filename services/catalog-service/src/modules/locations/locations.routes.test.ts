@@ -169,7 +169,7 @@ test('DELETE /admin/locations/:id, when the location exists, returns 204', async
   expect(service.deleteLocation).toHaveBeenCalledWith(
     expect.anything(),
     CITY_ID,
-    'catalog-service',
+    expect.objectContaining({ service: 'catalog-service' }),
   );
 });
 

@@ -136,6 +136,13 @@ export async function runSeed(em: Em, producer: string): Promise<SeedResult> {
 
   const total = result.locations + result.propertyTypes + result.lookups + result.unitConversions;
   // One event for the whole load: consumers reload everything on any reference.changed.
-  if (total > 0) await emitReferenceChanged(em, producer, 'location', randomUUID());
+  // Audited once, with no user: the seed is run from the command line.
+  const actor = { service: producer, userId: null, ip: null };
+  if (total > 0) {
+    await emitReferenceChanged(em, actor, 'location', randomUUID(), {
+      action: 'seeded',
+      after: result,
+    });
+  }
   return result;
 }

@@ -1,6 +1,7 @@
 import { createOrm, type Orm } from '@hanu/service-kit';
 import { Migration20261103140000_init } from '../migrations/Migration20261103140000_init.js';
 import { Migration20261103143222_add_identity_schema } from '../migrations/Migration20261103143222_add_identity_schema.js';
+import { Migration20261103164706_staff_setup } from '../migrations/Migration20261103164706_staff_setup.js';
 import {
   Permission,
   Role,
@@ -11,6 +12,7 @@ import {
 import { AuditLog } from './modules/audit-logs/index.js';
 import { OtpChallenge } from './modules/otp/index.js';
 import { Session } from './modules/sessions/index.js';
+import { StaffSetupLink } from './modules/staff-setup/index.js';
 import { User } from './modules/users/index.js';
 
 /** Every entity of this service. Used by the running service and by the migration CLI. */
@@ -24,12 +26,14 @@ export const ENTITIES = [
   UserRole,
   UserPermissionOverride,
   AuditLog,
+  StaffSetupLink,
 ];
 
 /** Every migration, oldest first. `orm.test.ts` fails if a file in `migrations/` is missing here. */
 export const MIGRATIONS = [
   Migration20261103140000_init,
   Migration20261103143222_add_identity_schema,
+  Migration20261103164706_staff_setup,
 ];
 
 export async function createIdentityOrm(clientUrl: string, schema: string): Promise<Orm> {

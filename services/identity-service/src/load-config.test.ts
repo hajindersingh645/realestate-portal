@@ -10,6 +10,7 @@ const base = {
   JWT_PUBLIC_KEY: 'pub',
   JWT_PRIVATE_KEY: 'line1\\nline2',
   OTP_SECRET: 'x'.repeat(32),
+  ADMIN_URL: 'http://localhost:5174',
   PLATFORM_COUNTRY: 'IN',
   PLATFORM_CURRENCY: 'INR',
   PLATFORM_LOCALE: 'en-IN',

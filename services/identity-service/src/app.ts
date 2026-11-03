@@ -5,6 +5,7 @@ import { registerAccessRoutes } from './modules/access/index.js';
 import { registerAuditLogRoutes } from './modules/audit-logs/index.js';
 import { registerAuthRoutes } from './modules/auth/index.js';
 import { registerStaffAuthRoutes } from './modules/staff-auth/index.js';
+import { registerStaffSetupRoutes } from './modules/staff-setup/index.js';
 import { registerAdminUserRoutes, registerUserRoutes } from './modules/users/index.js';
 import { loadSigningKey } from './tokens.js';
 
@@ -33,6 +34,11 @@ export function buildApp(deps: { orm: Orm; config: IdentityConfig }): App {
   };
   registerAuthRoutes(app, { orm, auth });
   registerStaffAuthRoutes(app, { orm, auth });
+  registerStaffSetupRoutes(app, {
+    orm,
+    serviceName: config.serviceName,
+    setup: { country: config.platform.country, adminUrl: config.adminUrl },
+  });
   registerUserRoutes(app, { orm, serviceName: config.serviceName });
   registerAccessRoutes(app, { orm, serviceName: config.serviceName });
   registerAuditLogRoutes(app, { orm });

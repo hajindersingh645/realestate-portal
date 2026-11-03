@@ -12,6 +12,7 @@ export function buildTestApp() {
     jwtPublicKey: keys.publicKeyPem,
     jwtPrivateKey: keys.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(),
     otpSecret: 'x'.repeat(32),
+    adminUrl: 'http://admin.test',
     platform: {
       country: 'IN',
       currency: 'INR',

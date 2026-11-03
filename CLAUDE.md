@@ -46,7 +46,7 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 - Migrate all services: `pnpm migrate`
 - Seed master data: `pnpm seed` (safe to repeat)
 - Draft a migration from entity changes: `pnpm --filter <service> migration:create --name <what>`, then `pnpm format`, read it, and add the class to `MIGRATIONS` in `orm.ts`
-- Run all services: `pnpm dev` (gateway :3000, identity-service :3001, catalog-service :3002)
+- Run all services: `pnpm dev` (gateway :3000, identity-service :3001, catalog-service :3002, notification-service :3006)
 - Lint and format check: `pnpm lint` · fix formatting: `pnpm format`
 - Type check: `pnpm typecheck`
 - Unit and route tests: `pnpm test`

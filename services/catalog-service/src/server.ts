@@ -18,10 +18,9 @@ const connection = await connectRabbit(config.rabbitmqUrl, (reason) => {
   process.exit(1);
 });
 await assertExchanges(connection, [EXCHANGES.catalog]);
-const messaging = await startMessaging({
+const messaging = startMessaging({
   orm,
   connection,
-  serviceName: config.serviceName,
   onError: (error) => {
     app.log.error({ err: error }, 'messaging error');
   },

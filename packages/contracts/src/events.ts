@@ -4,7 +4,6 @@ export const EXCHANGES = {
 } as const;
 
 export const ROUTING_KEYS = {
-  demoPinged: 'demo.pinged',
   referenceChanged: 'reference.changed',
 } as const;
 
@@ -13,11 +12,6 @@ export interface EventEnvelope<T = unknown> {
   timestamp: string;
   producer: string;
   payload: T;
-}
-
-export interface DemoPingedPayload {
-  pingId: string;
-  fail: boolean;
 }
 
 export function isEventEnvelope(value: unknown): value is EventEnvelope {

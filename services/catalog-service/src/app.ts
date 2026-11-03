@@ -7,6 +7,7 @@ import {
   type ServiceConfig,
 } from '@hanu/service-kit';
 import { registerDemoRoutes } from './modules/demo/index.js';
+import { registerLookupRoutes } from './modules/lookups/index.js';
 
 export function buildApp(deps: { orm: Orm; config: ServiceConfig }): App {
   const app = createApp({
@@ -20,5 +21,6 @@ export function buildApp(deps: { orm: Orm; config: ServiceConfig }): App {
   });
   registerAuth(app, { publicKeyPem: deps.config.jwtPublicKey });
   registerDemoRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
+  registerLookupRoutes(app, { orm: deps.orm, serviceName: deps.config.serviceName });
   return app;
 }

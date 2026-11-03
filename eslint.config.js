@@ -33,6 +33,7 @@ export default tseslint.config(
       '**/*.test.ts',
       'scripts/**',
       '*.config.ts',
+      '**/mikro-orm.config.ts',
       'vitest.swc.ts',
     ],
     rules: { 'n/no-process-env': 'off' },
@@ -47,7 +48,7 @@ export default tseslint.config(
   },
   {
     // Process entry points decide when the process ends.
-    files: ['**/server.ts', '**/migrate.ts'],
+    files: ['**/server.ts', '**/migrate.ts', '**/seed.ts'],
     rules: { 'n/no-process-exit': 'off' },
   },
   { files: ['**/*.js'], extends: [tseslint.configs.disableTypeChecked] },

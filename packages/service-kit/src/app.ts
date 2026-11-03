@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import Fastify, { LogController } from 'fastify';
+import { Type } from 'typebox';
 import { AppError } from './errors.js';
 
 export interface AppOptions {
@@ -8,6 +9,11 @@ export interface AppOptions {
   logLevel?: string;
   readyChecks?: (() => Promise<void>)[];
 }
+
+/** The body of every error response. Declare it in each route's `response` schema. */
+export const ErrorBody = Type.Object({
+  error: Type.Object({ code: Type.String(), message: Type.String() }),
+});
 
 declare module 'fastify' {
   interface FastifyContextConfig {

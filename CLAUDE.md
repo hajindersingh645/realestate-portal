@@ -26,6 +26,7 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 - Every route has a TypeBox schema and either `permission` or `public: true`.
 - Money is `bigint` in minor units, with no currency in column names (`amount`, `price`). Country, currency, locale and timezone come from `PLATFORM_*` env vars (one deployment per country).
 - IDs are UUIDs. Prices, quotas and limits are settings rows, never constants.
+- All `@mikro-orm/*` packages share one exact version (no `^`).
 - ID documents go to a private blob container. Listing media is public only while the listing is live.
 
 ## Naming
@@ -43,6 +44,8 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 - Infra up / down: `docker-compose up -d` / `docker-compose down` (Colima must be running)
 - Install: `pnpm install`
 - Migrate all services: `pnpm migrate`
+- Seed master data: `pnpm seed` (safe to repeat)
+- Draft a migration from entity changes: `pnpm --filter <service> migration:create --name <what>`, then `pnpm format`, read it, and add the class to `MIGRATIONS` in `orm.ts`
 - Run all services: `pnpm dev` (gateway :3000, catalog-service :3002)
 - Lint and format check: `pnpm lint` · fix formatting: `pnpm format`
 - Type check: `pnpm typecheck`

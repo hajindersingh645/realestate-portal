@@ -18,6 +18,7 @@
     "infra:down": "docker-compose down",
     "dev": "pnpm -r --parallel dev",
     "migrate": "pnpm -r migrate",
+    "seed": "pnpm -r seed",
     "gen:keys": "tsx scripts/gen-dev-keys.ts",
     "dev:token": "tsx --env-file=.env scripts/dev-token.ts"
   },

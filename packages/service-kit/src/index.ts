@@ -6,3 +6,5 @@ export * from './db.js';
 export * from './outbox.js';
 export * from './rabbit.js';
 export * from './subscribe.js';
+export * from './migrations.js';
+export * from './db-errors.js';

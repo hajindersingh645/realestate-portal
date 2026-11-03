@@ -292,12 +292,18 @@ importers:
       '@fastify/rate-limit':
         specifier: ^11.2.1
         version: 11.2.1
+      '@hanu/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@hanu/service-kit':
         specifier: workspace:*
         version: link:../../packages/service-kit
       fastify:
         specifier: ^5.12.8
         version: 5.12.8
+      jose:
+        specifier: ^6.2.12
+        version: 6.2.12
 
   services/identity-service:
     dependencies:

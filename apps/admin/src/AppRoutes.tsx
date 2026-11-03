@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router';
+import { AuditLogPage } from './access/audit/AuditLogPage';
 import { RolesPage } from './access/roles/RolesPage';
 import { UserDetailPage } from './access/users/UserDetailPage';
 import { UsersPage } from './access/users/UsersPage';
@@ -30,6 +31,7 @@ export function AppRoutes() {
           <Route path={PATHS.users} element={<UsersPage />} />
           <Route path="/access/users/:id" element={<UserDetailPage />} />
           <Route path={PATHS.roles} element={<RolesPage />} />
+          <Route path={PATHS.auditLog} element={<AuditLogPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />

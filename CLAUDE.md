@@ -23,7 +23,7 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 - Service code never imports `amqplib`; use `outbox.add()` and `subscribe()` from the kit.
 - Consumers must be safe to run twice.
 - Limits and state changes are enforced in SQL (`WHERE` conditions, unique constraints), not in application `if`s.
-- Every route has a TypeBox schema and either `permission` or `public: true`.
+- Every route has a TypeBox schema and one of `permission`, `authenticated: true` (any signed-in user) or `public: true`.
 - Money is `bigint` in minor units, with no currency in column names (`amount`, `price`). Country, currency, locale and timezone come from `PLATFORM_*` env vars (one deployment per country).
 - IDs are UUIDs. Prices, quotas and limits are settings rows, never constants.
 - All `@mikro-orm/*` packages share one exact version (no `^`).
@@ -51,5 +51,6 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 - Type check: `pnpm typecheck`
 - Unit and route tests: `pnpm test`
 - Integration tests (need infra; stop `pnpm dev` first): `pnpm test:int`
-- Dev token for guarded routes: `pnpm --silent dev:token <permission> [...]`
+- First super admin (asks for the password): `pnpm --filter identity-service create-admin --email <e> --phone <p> --name <n>`
+- OTP codes in development: printed by notification-service (`sms to …`)
 - Security scan: `snyk test`

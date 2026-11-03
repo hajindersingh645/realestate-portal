@@ -1,4 +1,4 @@
-import type { Constructor, EntityClass } from '@mikro-orm/core';
+import { DriverException, type Constructor, type EntityClass } from '@mikro-orm/core';
 import { Migrator, type Migration } from '@mikro-orm/migrations';
 import { defineConfig, MikroORM, type EntityManager } from '@mikro-orm/postgresql';
 
@@ -38,10 +38,19 @@ export async function sql<T = Record<string, unknown>>(
   query: string,
   params: unknown[] = [],
 ): Promise<T[]> {
-  const rows: unknown = await em
-    .getConnection()
-    .execute(query, params, 'all', em.getTransactionContext());
-  return rows as T[];
+  try {
+    const rows: unknown = await em
+      .getConnection()
+      .execute(query, params, 'all', em.getTransactionContext());
+    return rows as T[];
+  } catch (error: unknown) {
+    // The raw connection does not translate driver errors. Do it here, so a unique or
+    // foreign-key violation from raw SQL is the same typed exception an entity flush throws.
+    if (error instanceof Error && !(error instanceof DriverException)) {
+      throw em.getPlatform().getExceptionConverter().convertException(error);
+    }
+    throw error;
+  }
 }
 
 /** Tables every service owns. Each service's first migration runs these. */

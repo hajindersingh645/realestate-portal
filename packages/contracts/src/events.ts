@@ -5,6 +5,7 @@ export const EXCHANGES = {
 
 export const ROUTING_KEYS = {
   demoPinged: 'demo.pinged',
+  referenceChanged: 'reference.changed',
 } as const;
 
 export interface EventEnvelope<T = unknown> {
@@ -29,4 +30,18 @@ export function isEventEnvelope(value: unknown): value is EventEnvelope {
     typeof v.payload === 'object' &&
     v.payload !== null
   );
+}
+
+export const REFERENCE_ENTITIES = [
+  'location',
+  'property_type',
+  'lookup',
+  'unit_conversion',
+] as const;
+export type ReferenceEntity = (typeof REFERENCE_ENTITIES)[number];
+
+/** Says which master-data row changed. Consumers reload their copy; the payload carries no data. */
+export interface ReferenceChangedPayload {
+  entity: ReferenceEntity;
+  id: string;
 }

@@ -16,6 +16,7 @@
     "packages/*/src",
     "services/*/src",
     "services/*/migrations",
+    "services/*/mikro-orm.config.ts",
     "scripts",
     "*.config.ts",
     "vitest.swc.ts"

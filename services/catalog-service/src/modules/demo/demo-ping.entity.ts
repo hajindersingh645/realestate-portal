@@ -7,7 +7,7 @@ export class DemoPing {
   @PrimaryKey({ type: 'uuid' })
   id: string = randomUUID();
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   note!: string;
 
   @Property({ type: 'Date', nullable: true })

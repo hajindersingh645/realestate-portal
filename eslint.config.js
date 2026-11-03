@@ -33,6 +33,7 @@ export default tseslint.config(
       '**/*.test.ts',
       'scripts/**',
       '*.config.ts',
+      '**/mikro-orm.config.ts',
       'vitest.swc.ts',
     ],
     rules: { 'n/no-process-env': 'off' },

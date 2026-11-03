@@ -126,6 +126,29 @@ test('completeSetup, with a fresh token, stores an argon2id hash that verifies, 
   expect(live).toHaveLength(0);
 });
 
+test('completeSetup, when it succeeds, queues user.access.changed so the gateway refuses access tokens issued before it', async () => {
+  const { userId, setupUrl } = await createStaff(
+    orm.em.fork(),
+    admin,
+    DEPS,
+    staffInput([await role()]),
+  );
+  const count = async (): Promise<number> =>
+    (
+      await sql(
+        orm.em.fork(),
+        `select 1 from outbox_events
+          where routing_key = 'user.access.changed' and envelope->'payload'->>'userId' = ?`,
+        [userId],
+      )
+    ).length;
+  const before = await count();
+
+  await completeSetup(orm.em.fork(), admin, tokenOf(setupUrl), 'a long enough password');
+
+  expect(await count()).toBe(before + 1);
+});
+
 test('completeSetup, with the same token twice, fails the second time with SETUP_LINK_INVALID', async () => {
   const { setupUrl } = await createStaff(orm.em.fork(), admin, DEPS, staffInput([await role()]));
   await completeSetup(orm.em.fork(), admin, tokenOf(setupUrl), 'a long enough password');

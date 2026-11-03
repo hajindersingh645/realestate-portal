@@ -10,6 +10,7 @@ import {
 } from '@hanu/service-kit';
 import argon2 from 'argon2';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { accessChanged } from '../access/index.js';
 import { grantRole } from '../access/grants.service.js';
 import { phoneOrThrow } from '../auth/index.js';
 
@@ -151,6 +152,8 @@ export async function completeSetup(
       'update sessions set revoked_at = now() where user_id = ? and revoked_at is null',
       [userId],
     );
+    // Revoked sessions stop refreshing; this also makes the gateway refuse access tokens already out.
+    await accessChanged(tx, actor.service, [userId]);
     await audit(
       tx,
       EXCHANGES.identity,

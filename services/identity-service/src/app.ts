@@ -1,9 +1,10 @@
 import cookie from '@fastify/cookie';
 import { createApp, registerAuth, sql, type App, type Orm } from '@hanu/service-kit';
 import type { IdentityConfig } from './load-config.js';
+import { registerAccessRoutes } from './modules/access/index.js';
 import { registerAuthRoutes } from './modules/auth/index.js';
 import { registerStaffAuthRoutes } from './modules/staff-auth/index.js';
-import { registerUserRoutes } from './modules/users/index.js';
+import { registerAdminUserRoutes, registerUserRoutes } from './modules/users/index.js';
 import { loadSigningKey } from './tokens.js';
 
 export function buildApp(deps: { orm: Orm; config: IdentityConfig }): App {
@@ -32,5 +33,11 @@ export function buildApp(deps: { orm: Orm; config: IdentityConfig }): App {
   registerAuthRoutes(app, { orm, auth });
   registerStaffAuthRoutes(app, { orm, auth });
   registerUserRoutes(app, { orm, serviceName: config.serviceName });
+  registerAccessRoutes(app, { orm, serviceName: config.serviceName });
+  registerAdminUserRoutes(app, {
+    orm,
+    serviceName: config.serviceName,
+    country: config.platform.country,
+  });
   return app;
 }

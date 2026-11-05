@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useEffect, useEffectEvent, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useEffectEvent, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 export interface DialogProps {
@@ -13,6 +13,12 @@ export interface DialogProps {
   /** False for dialogs that must be closed with their own button (e.g. a link shown only once). */
   dismissible?: boolean;
 }
+
+/** How long the exit animation runs before the dialog leaves the page. Matches `duration-200`. */
+const EXIT_MS = 200;
+// Curves from the animation guide: an iOS-like drawer, and a strong ease-out for the dialog.
+const DRAWER_EASE = 'ease-[cubic-bezier(0.32,0.72,0,1)]';
+const DIALOG_EASE = 'ease-[cubic-bezier(0.23,1,0.32,1)]';
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -32,6 +38,20 @@ export function Dialog({
 }: DialogProps) {
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
+  // Stays rendered for EXIT_MS after `open` turns false, so it can animate out.
+  const [rendered, setRendered] = useState(open);
+  if (open && !rendered) setRendered(true);
+  const closing = rendered && !open;
+
+  useEffect(() => {
+    if (!closing) return undefined;
+    const timer = setTimeout(() => {
+      setRendered(false);
+    }, EXIT_MS);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [closing]);
 
   // An effect event, so the effect below does not re-run (and steal focus) when `onClose` changes.
   const close = useEffectEvent(() => {
@@ -70,18 +90,38 @@ export function Dialog({
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!rendered) return null;
 
   const position =
     variant === 'drawer'
       ? 'fixed inset-y-0 left-0 w-72 max-w-[85vw] rounded-r-2xl'
       : 'fixed inset-x-4 top-[10vh] mx-auto max-h-[80vh] w-auto max-w-lg rounded-2xl sm:inset-x-0';
+  // Enter from `starting:` (@starting-style), exit by flipping to the same values while `closing`.
+  // Reduced motion keeps the fade and drops the movement.
+  const motion =
+    variant === 'drawer'
+      ? `transition-[translate,opacity] ${DRAWER_EASE} ${
+          closing
+            ? 'duration-200 motion-safe:-translate-x-full motion-reduce:opacity-0'
+            : 'duration-300 motion-safe:starting:-translate-x-full motion-reduce:starting:opacity-0'
+        }`
+      : `transition-[scale,opacity] ${DIALOG_EASE} ${
+          closing
+            ? 'duration-150 opacity-0 motion-safe:scale-96'
+            : 'duration-200 starting:opacity-0 motion-safe:starting:scale-96'
+        }`;
 
   return createPortal(
-    <div className="fixed inset-0 z-50">
+    // While closing it is out of the accessibility tree and takes no clicks.
+    <div
+      className="fixed inset-0 z-50"
+      data-closing={closing ? '' : undefined}
+      aria-hidden={closing}
+      inert={closing}
+    >
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-zinc-900/30"
+        className={`absolute inset-0 bg-zinc-900/30 transition-opacity duration-200 ${DIALOG_EASE} ${closing ? 'opacity-0' : 'starting:opacity-0'}`}
         onClick={dismissible ? onClose : undefined}
       />
       <div
@@ -90,7 +130,7 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`${position} flex flex-col overflow-hidden border border-zinc-200 bg-white shadow-xl outline-none`}
+        className={`${position} ${motion} flex flex-col overflow-hidden border border-zinc-200 bg-white shadow-xl outline-none`}
       >
         <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
           <h2 id={titleId} className="text-base font-semibold">

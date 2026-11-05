@@ -4,6 +4,8 @@ import {
   ConflictError,
   decodeCursor,
   encodeCursor,
+  ForbiddenError,
+  internalGet,
   NotFoundError,
   resolveAreas,
   resolvePropertyType,
@@ -20,6 +22,8 @@ import type { MyRequirement, RequirementInput, RequirementUpdate } from './requi
 export interface RequirementDeps {
   /** catalog-service inside the network, for `/internal/*`. */
   catalogUrl: string;
+  /** identity-service inside the network, for the buyer's contact. */
+  identityUrl: string;
 }
 
 /** The buyer may edit only before review or after a rejection. */
@@ -235,10 +239,21 @@ function refuseContactDetails(requirement: MyRequirement): void {
 export async function submitMyRequirement(
   em: Em,
   actor: Actor,
+  deps: RequirementDeps,
   id: string,
   body: { consent: boolean },
 ): Promise<MyRequirement> {
   const buyerId = buyerOf(actor);
+  // Before the transaction: staff see this contact in review, and an unlock reads it later.
+  const contact = await internalGet<{
+    name: string;
+    phone: string;
+    registeredAs: string;
+    status: string;
+  }>(deps.identityUrl, `/internal/users/${buyerId}`);
+  if (contact.registeredAs !== 'buyer' || contact.status !== 'active') {
+    throw new ForbiddenError('Only an active buyer can send a requirement for review');
+  }
   return await em.transactional(async (tx) => {
     const before = await getMyRequirement(tx, actor, id);
     if (!body.consent) {
@@ -257,6 +272,12 @@ export async function submitMyRequirement(
     if (moved[0] === undefined) {
       throw new ConflictError(`A requirement in ${before.status} cannot be sent for review`);
     }
+    await sql(
+      tx,
+      `insert into buyer_contacts (buyer_id, name, phone, updated_at) values (?, ?, ?, now())
+       on conflict (buyer_id) do update set name = excluded.name, phone = excluded.phone, updated_at = now()`,
+      [buyerId, contact.name, contact.phone],
+    );
     await recordTransition(tx, actor, id, before.status, 'pending_review');
     await audit(tx, EXCHANGES.lead, actor, {
       action: 'requirement.submitted',

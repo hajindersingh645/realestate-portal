@@ -22,3 +22,7 @@ export interface RequirementDecisionPayload {
   status: 'live' | 'pending_payment' | 'rejected';
   reason: string | null;
 }
+
+/** What staff can do to a requirement. Every action but `approve` needs a reason. */
+export const REQUIREMENT_DECISIONS = ['approve', 'reject', 'hide', 'fake'] as const;
+export type RequirementDecision = (typeof REQUIREMENT_DECISIONS)[number];

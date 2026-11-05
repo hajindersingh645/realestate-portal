@@ -3,6 +3,7 @@ import { assertExchanges, connectRabbit } from '@hanu/service-kit';
 import { buildApp } from './app.js';
 import { config } from './config.js';
 import { startMessaging } from './messaging.js';
+import { expireRequirements } from './modules/moderation/index.js';
 import { createLeadOrm } from './orm.js';
 
 const orm = await createLeadOrm(config.databaseUrl, config.dbSchema);
@@ -18,7 +19,7 @@ const connection = await connectRabbit(config.rabbitmqUrl, (reason) => {
   process.exit(1);
 });
 await assertExchanges(connection, [EXCHANGES.lead, EXCHANGES.identity]);
-const messaging = startMessaging({
+const messaging = await startMessaging({
   orm,
   connection,
   onError: (error) => {
@@ -27,12 +28,25 @@ const messaging = startMessaging({
 });
 messaging.relay.start();
 
+// Hourly: live requirements past their expiry leave the public list. Safe on every instance.
+async function expire(): Promise<void> {
+  try {
+    const n = await expireRequirements(orm.em.fork());
+    if (n > 0) app.log.info({ expired: n }, 'requirements expired');
+  } catch (error) {
+    app.log.error({ err: error }, 'expiry job failed');
+  }
+}
+void expire();
+const expiryTimer = setInterval(() => void expire(), 60 * 60 * 1000);
+
 await app.listen({ port: config.port, host: '0.0.0.0' });
 
 async function shutdown(signal: string): Promise<void> {
   if (stopping) return;
   stopping = true;
   app.log.info({ signal }, 'shutting down');
+  clearInterval(expiryTimer);
   await app.close();
   await messaging.stop();
   await connection.close();

@@ -101,6 +101,7 @@ export function registerRequirementRoutes(
       await submitMyRequirement(
         em(),
         actorOf(request, deps.serviceName),
+        deps.requirements,
         request.params.id,
         request.body,
       ),

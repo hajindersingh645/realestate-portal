@@ -16,6 +16,8 @@ import {
   catalogHandlers,
   CITY,
   DB_URL,
+  IDENTITY,
+  identityHandlers,
   LOCALITY,
   requirementInput,
   RETIRED_TYPE,
@@ -31,8 +33,8 @@ import {
   updateMyRequirement,
 } from './requirements.service.js';
 
-const deps = { catalogUrl: CATALOG };
-const catalog = setupServer(...catalogHandlers);
+const deps = { catalogUrl: CATALOG, identityUrl: IDENTITY };
+const catalog = setupServer(...catalogHandlers, ...identityHandlers);
 let orm: Orm;
 
 beforeAll(async () => {
@@ -111,7 +113,7 @@ test('submitMyRequirement, with consent, moves the draft to pending_review and r
   const asha = buyer();
   const { id } = await createRequirement(orm.em.fork(), asha, deps, requirementInput());
 
-  const submitted = await submitMyRequirement(orm.em.fork(), asha, id, { consent: true });
+  const submitted = await submitMyRequirement(orm.em.fork(), asha, deps, id, { consent: true });
 
   expect(submitted.status).toBe('pending_review');
   expect(submitted.submittedAt).not.toBeNull();
@@ -132,7 +134,7 @@ test('submitMyRequirement, without consent, throws ValidationError and stays a d
   const { id } = await createRequirement(orm.em.fork(), asha, deps, requirementInput());
 
   await expect(
-    submitMyRequirement(orm.em.fork(), asha, id, { consent: false }),
+    submitMyRequirement(orm.em.fork(), asha, deps, id, { consent: false }),
   ).rejects.toBeInstanceOf(ValidationError);
   expect((await getMyRequirement(orm.em.fork(), asha, id)).status).toBe('draft');
 });
@@ -153,17 +155,17 @@ test('submitMyRequirement, with a phone in the notes or an email in a preference
   );
 
   await expect(
-    submitMyRequirement(orm.em.fork(), asha, withPhone.id, { consent: true }),
+    submitMyRequirement(orm.em.fork(), asha, deps, withPhone.id, { consent: true }),
   ).rejects.toThrow('body/notes Remove phone numbers, emails and links');
   await expect(
-    submitMyRequirement(orm.em.fork(), asha, withEmail.id, { consent: true }),
+    submitMyRequirement(orm.em.fork(), asha, deps, withEmail.id, { consent: true }),
   ).rejects.toThrow('body/preferences Remove phone numbers, emails and links');
 });
 
 test('updateMyRequirement, while pending_review, throws ConflictError; while rejected, saves the change', async () => {
   const asha = buyer();
   const { id } = await createRequirement(orm.em.fork(), asha, deps, requirementInput());
-  await submitMyRequirement(orm.em.fork(), asha, id, { consent: true });
+  await submitMyRequirement(orm.em.fork(), asha, deps, id, { consent: true });
 
   await expect(
     updateMyRequirement(orm.em.fork(), asha, deps, id, { notes: 'Changed' }),
@@ -190,7 +192,7 @@ test('another buyer, reading, editing, submitting or closing a requirement, gets
   await expect(updateMyRequirement(em, ravi, deps, id, { notes: 'x' })).rejects.toBeInstanceOf(
     NotFoundError,
   );
-  await expect(submitMyRequirement(em, ravi, id, { consent: true })).rejects.toBeInstanceOf(
+  await expect(submitMyRequirement(em, ravi, deps, id, { consent: true })).rejects.toBeInstanceOf(
     NotFoundError,
   );
   await expect(closeMyRequirement(em, ravi, id)).rejects.toBeInstanceOf(NotFoundError);

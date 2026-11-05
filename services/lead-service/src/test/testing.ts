@@ -33,6 +33,19 @@ function ids(request: Request): string[] {
   return new URL(request.url).searchParams.get('ids')?.split(',') ?? [];
 }
 
+/** identity's `/internal/users/:id`: every id is an active buyer named Asha. */
+export const identityHandlers = [
+  http.get(`${IDENTITY}/internal/users/:id`, ({ params }) =>
+    HttpResponse.json({
+      id: params.id,
+      name: 'Asha',
+      phone: '+919815012345',
+      registeredAs: 'buyer',
+      status: 'active',
+    }),
+  ),
+];
+
 /** catalog's `/internal/*`, intercepted at the network layer. */
 export const catalogHandlers = [
   http.get(`${CATALOG}/internal/locations`, ({ request }) =>

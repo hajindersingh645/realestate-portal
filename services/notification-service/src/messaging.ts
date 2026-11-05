@@ -3,10 +3,12 @@ import {
   ROUTING_KEYS,
   type AccountDecisionPayload,
   type OtpRequestedPayload,
+  type RequirementDecisionPayload,
   type UserContactPayload,
 } from '@hanu/contracts';
 import { subscribe, type Orm, type RabbitConnection } from '@hanu/service-kit';
 import { handleAccountDecided } from './consumers/account-decided.js';
+import { handleRequirementDecided } from './consumers/requirement-decided.js';
 import { handleOtpRequested } from './consumers/otp-requested.js';
 import { upsertRecipient } from './consumers/user-contact.js';
 import type { SmsProvider } from './providers/sms-provider.js';
@@ -53,6 +55,15 @@ export async function startMessaging(deps: {
       ],
       handler: async (envelope, em) => {
         await handleAccountDecided(em, deps.sms, deps.locale, envelope);
+      },
+    }),
+    await subscribe<RequirementDecisionPayload>({
+      ...common,
+      exchange: EXCHANGES.lead,
+      queue: 'notification-service.requirement.decided',
+      keys: [ROUTING_KEYS.requirementApproved, ROUTING_KEYS.requirementRejected],
+      handler: async (envelope, em) => {
+        await handleRequirementDecided(em, deps.sms, deps.locale, envelope);
       },
     }),
   ];

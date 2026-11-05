@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { PATHS } from '../paths';
-import { useSession } from '../session/session-store';
+import { useSession } from '@hanu/web-kit';
 
 /** Guards every staff page: waits for the first refresh, then lets a signed-in user through. */
 export function RequireSession() {

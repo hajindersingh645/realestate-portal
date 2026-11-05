@@ -1,6 +1,6 @@
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
-import { Dialog } from '../ui/Dialog';
+import { Dialog } from '@hanu/web-kit';
 import { Brand } from './Brand';
 import { NavLinks } from './NavLinks';
 import { UserMenu } from './UserMenu';

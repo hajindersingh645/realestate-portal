@@ -10,7 +10,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { PATHS } from '../paths';
-import { useSession } from '../session/session-store';
+import { useSession } from '@hanu/web-kit';
 
 export interface NavItem {
   label: string;

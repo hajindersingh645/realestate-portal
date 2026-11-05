@@ -1,9 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '../../ui/Button';
-import { DataList } from '../../ui/DataList';
-import { EmptyState } from '../../ui/EmptyState';
-import { PageHeader } from '../../ui/PageHeader';
+import { Button, DataList, EmptyState, PageHeader } from '@hanu/web-kit';
 import { ActiveBadge } from '../ActiveBadge';
 import { useCatalogList } from '../catalog-api';
 import { CatalogRowActions } from '../CatalogRowActions';

@@ -56,8 +56,8 @@ export default tseslint.config(
     rules: { 'n/no-process-exit': 'off' },
   },
   {
-    // The admin runs in the browser: React rules on, Node rules off.
-    files: ['apps/**/*.{ts,tsx}'],
+    // The browser apps and their shared kit: React rules on, Node rules off.
+    files: ['apps/**/*.{ts,tsx}', 'packages/web-kit/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat['recommended-latest'], jsxA11y.flatConfigs.recommended],
     languageOptions: { globals: globals.browser },
     rules: {
@@ -69,7 +69,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ['apps/**/*.test.{ts,tsx}', 'apps/**/test/**'],
+    files: [
+      'apps/**/*.test.{ts,tsx}',
+      'apps/**/test/**',
+      'packages/web-kit/src/testing/**',
+      'packages/web-kit/**/*.test.{ts,tsx}',
+    ],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',

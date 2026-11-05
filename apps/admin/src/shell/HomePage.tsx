@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
-import { useSession } from '../session/session-store';
+import { useSession } from '@hanu/web-kit';
 import { useVisibleNav } from './nav';
 
 /** Start page: a card for every section this staff member can open. Dashboards come in Phase 5. */

@@ -1,8 +1,8 @@
 import { http, HttpResponse } from 'msw/http';
 import { beforeEach, expect, test } from 'vitest';
 import { useSession } from '../session/session-store';
-import { fakeToken, TEST_USER } from '../test/tokens';
-import { server } from '../test/server';
+import { fakeToken, TEST_USER } from '../testing/tokens';
+import { server } from '../testing/server';
 import { api } from './client';
 import { ApiError } from './errors';
 

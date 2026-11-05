@@ -1,11 +1,6 @@
 import { PERMISSIONS } from '@hanu/contracts';
 import { useState } from 'react';
-import { ApiError } from '../../api/errors';
-import { Button } from '../../ui/Button';
-import { Dialog } from '../../ui/Dialog';
-import { FormDialog } from '../../ui/FormDialog';
-import { TextField } from '../../ui/TextField';
-import { textOf } from '../../ui/form-values';
+import { ApiError, Button, Dialog, FormDialog, TextField, textOf } from '@hanu/web-kit';
 import { useIdentityWrite, type Role } from '../access-api';
 
 export interface RoleDialogProps {

@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, type ApiInit } from '../api/client';
-import { toast } from '../ui/toast-store';
+import { api, type ApiInit, toast } from '@hanu/web-kit';
 
 export const IDENTITY = '/admin/identity';
 

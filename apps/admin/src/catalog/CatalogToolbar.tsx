@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { SearchInput } from '../ui/SearchInput';
+import { SearchInput } from '@hanu/web-kit';
 import { StatusFilter } from './StatusFilter';
 
 export interface CatalogToolbarProps {

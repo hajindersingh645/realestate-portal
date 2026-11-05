@@ -2,13 +2,15 @@ import { UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { PATHS } from '../../paths';
-import { useCan } from '../../session/useCan';
-import { Button } from '../../ui/Button';
-import { DataList } from '../../ui/DataList';
-import { EmptyState } from '../../ui/EmptyState';
-import { FilterTabs } from '../../ui/FilterTabs';
-import { PageHeader } from '../../ui/PageHeader';
-import { SearchInput } from '../../ui/SearchInput';
+import {
+  Button,
+  DataList,
+  EmptyState,
+  FilterTabs,
+  PageHeader,
+  SearchInput,
+  useCan,
+} from '@hanu/web-kit';
 import { formatDateTime, useUsers, type UserSummary } from '../access-api';
 import { AddStaffDialog } from './AddStaffDialog';
 import { UserStatusBadge } from './UserStatusBadge';

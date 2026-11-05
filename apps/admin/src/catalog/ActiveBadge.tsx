@@ -1,4 +1,4 @@
-import { StatusBadge } from '../ui/StatusBadge';
+import { StatusBadge } from '@hanu/web-kit';
 
 export interface ActiveBadgeProps {
   active: boolean;

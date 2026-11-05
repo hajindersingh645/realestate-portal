@@ -1,11 +1,6 @@
 import { PERMISSIONS } from '@hanu/contracts';
-import { ApiError } from '../../api/errors';
-import { FormDialog } from '../../ui/FormDialog';
-import { Select } from '../../ui/Select';
-import { TextField } from '../../ui/TextField';
-import { textOf } from '../../ui/form-values';
+import { ApiError, FormDialog, FormError, Select, TextField, textOf } from '@hanu/web-kit';
 import { ACCESS_ERRORS, useIdentityWrite } from '../access-api';
-import { FormError } from '../../ui/FormError';
 
 export interface OverrideDialogProps {
   userId: string;

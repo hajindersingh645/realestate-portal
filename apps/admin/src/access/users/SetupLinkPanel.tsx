@@ -1,6 +1,5 @@
 import { Copy } from 'lucide-react';
-import { Button } from '../../ui/Button';
-import { toast } from '../../ui/toast-store';
+import { Button, toast } from '@hanu/web-kit';
 import { formatDateTime } from '../access-api';
 
 export interface SetupLinkPanelProps {

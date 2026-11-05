@@ -1,12 +1,10 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw/http';
 import { expect, test } from 'vitest';
-import { useSession } from '../../session/session-store';
+import { useSession } from '@hanu/web-kit';
 import { roles } from '../../test/access-fixtures';
 import { renderApp } from '../../test/render';
-import { server } from '../../test/server';
-import { fakeToken, TEST_USER } from '../../test/tokens';
+import { fakeToken, http, HttpResponse, server, TEST_USER } from '@hanu/web-kit/testing';
 
 test('RolesPage, opening a system role, shows its permissions read-only', async () => {
   useSession

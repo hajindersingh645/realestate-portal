@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router';
-import { Toaster } from '../ui/Toaster';
+import { Toaster } from '@hanu/web-kit';
 import { Brand } from './Brand';
 import { MobileNav } from './MobileNav';
 import { NavLinks } from './NavLinks';

@@ -1,7 +1,5 @@
 import type { LookupGroup } from '@hanu/contracts';
-import { FormDialog } from '../../ui/FormDialog';
-import { TextField } from '../../ui/TextField';
-import { textOf } from '../../ui/form-values';
+import { FormDialog, TextField, textOf } from '@hanu/web-kit';
 import { fieldErrors, formLevelError, useCatalogWrite } from '../catalog-api';
 import { GROUP_LABELS } from './groups';
 import type { Lookup } from './LookupsPage';

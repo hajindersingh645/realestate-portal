@@ -1,13 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { useState, type SubmitEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { api } from '../api/client';
+import { api, AuthCard, Button, FormError, TextField, textOf } from '@hanu/web-kit';
 import { PATHS } from '../paths';
-import { AuthCard } from '../ui/AuthCard';
-import { Button } from '../ui/Button';
-import { FormError } from '../ui/FormError';
-import { textOf } from '../ui/form-values';
-import { TextField } from '../ui/TextField';
 
 const MIN_PASSWORD_LENGTH = 12;
 const INVALID = 'This link has expired or was already used. Ask your admin for a new one.';

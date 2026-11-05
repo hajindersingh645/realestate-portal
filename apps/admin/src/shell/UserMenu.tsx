@@ -1,9 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { api } from '../api/client';
+import { api, useSession } from '@hanu/web-kit';
 import { PATHS } from '../paths';
-import { useSession } from '../session/session-store';
 
 /** The signed-in staff member, pinned to the bottom of the sidebar, with Sign out. */
 export function UserMenu() {

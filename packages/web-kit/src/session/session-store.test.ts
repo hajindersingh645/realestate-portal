@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { expect, test } from 'vitest';
-import { fakeToken, TEST_USER } from '../test/tokens';
+import { fakeToken, TEST_USER } from '../testing/tokens';
 import { useSession } from './session-store';
 import { useCan } from './useCan';
 

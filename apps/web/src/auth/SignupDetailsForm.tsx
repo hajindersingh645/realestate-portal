@@ -49,7 +49,7 @@ export function SignupDetailsForm({ error, pending, onSubmit }: SignupDetailsFor
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium text-zinc-700">I am here because</legend>
         {SIDES.map((side) => (
-          <label key={side.value} className="flex items-center gap-2 text-sm">
+          <label key={side.value} className="flex items-center gap-2 py-1 text-sm">
             <input
               type="radio"
               name="side"

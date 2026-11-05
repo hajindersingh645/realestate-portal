@@ -21,7 +21,7 @@ export function TextField({ label, name, error, hint, className = '', ...rest }:
         name={name}
         aria-invalid={error !== undefined}
         aria-describedby={describedBy}
-        className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none placeholder:text-zinc-400 focus:border-accent focus:ring-2 focus:ring-accent/20 aria-invalid:border-red-400"
+        className="h-10 rounded-lg border border-zinc-200 bg-white px-3 text-base outline-none sm:h-9 sm:text-sm placeholder:text-zinc-400 focus:border-accent focus:ring-2 focus:ring-accent/20 aria-invalid:border-red-400"
         {...rest}
       />
       {error !== undefined ? (

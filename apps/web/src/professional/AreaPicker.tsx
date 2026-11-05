@@ -30,11 +30,12 @@ export function AreaPicker({ selected }: AreaPickerProps) {
             open={open}
             className="rounded-lg border border-zinc-200 px-3 py-2"
           >
-            <summary className="cursor-pointer text-sm font-medium">{city.name}</summary>
-            <div className="mt-2 grid grid-cols-3 gap-x-4 gap-y-1.5">
-              <label className="col-span-3 flex items-center gap-2 text-sm">
+            <summary className="cursor-pointer py-1 text-sm font-medium">{city.name}</summary>
+            <div className="mt-2 grid grid-cols-1 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
+              <label className="col-span-full flex items-center gap-2 py-1.5 text-sm">
                 <input
                   type="checkbox"
+                  className="size-4"
                   name="locationIds"
                   value={city.id}
                   defaultChecked={chosen.has(city.id)}
@@ -42,9 +43,10 @@ export function AreaPicker({ selected }: AreaPickerProps) {
                 All of {city.name}
               </label>
               {localities.map((locality) => (
-                <label key={locality.id} className="flex items-center gap-2 text-sm">
+                <label key={locality.id} className="flex items-center gap-2 py-1.5 text-sm">
                   <input
                     type="checkbox"
+                    className="size-4"
                     name="locationIds"
                     value={locality.id}
                     defaultChecked={chosen.has(locality.id)}

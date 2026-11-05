@@ -29,7 +29,7 @@ export function Select({
         name={name}
         aria-invalid={error !== undefined}
         aria-describedby={error === undefined ? undefined : `${id}-error`}
-        className="h-9 rounded-lg border border-zinc-200 bg-white px-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+        className="h-10 rounded-lg border border-zinc-200 bg-white px-2.5 text-base outline-none sm:h-9 sm:text-sm focus:border-accent focus:ring-2 focus:ring-accent/20"
         {...rest}
       >
         {placeholder !== undefined && <option value="">{placeholder}</option>}

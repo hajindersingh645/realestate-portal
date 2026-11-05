@@ -26,3 +26,4 @@ export * from './shell/RequireSession';
 export * from './shell/safe-next';
 export * from './shell/UserMenu';
 export * from './shell/NotFoundPage';
+export * from './shell/MobileNav';

@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router';
-import { Brand, Toaster, UserMenu } from '@hanu/web-kit';
+import { Brand, MobileNav, Toaster, UserMenu } from '@hanu/web-kit';
 import { PATHS } from '../paths';
-import { MobileNav } from './MobileNav';
 import { NavLinks } from './NavLinks';
 
 /** The frame around every staff page: sidebar on a laptop, top bar and drawer on a phone. */
@@ -15,7 +14,9 @@ export function AppShell() {
         </div>
         <UserMenu signInPath={PATHS.login} />
       </aside>
-      <MobileNav />
+      <MobileNav app="Admin" signInPath={PATHS.login}>
+        {(close) => <NavLinks onNavigate={close} />}
+      </MobileNav>
       <main className="px-4 py-6 sm:px-6 lg:ml-64 lg:px-8">
         <Outlet />
       </main>

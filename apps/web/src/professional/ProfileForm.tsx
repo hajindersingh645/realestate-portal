@@ -65,9 +65,9 @@ export function ProfileForm({ account, error, pending, saved, onSubmit }: Profil
       {account === undefined ? (
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-medium text-zinc-700">You are</legend>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap gap-x-6 gap-y-3">
             {ACCOUNT_TYPES.map((type) => (
-              <label key={type} className="flex items-center gap-2 text-sm">
+              <label key={type} className="flex items-center gap-2 py-1 text-sm">
                 <input type="radio" name="type" value={type} defaultChecked={type === 'agent'} />
                 {TYPE_LABELS.get(type)}
               </label>
@@ -106,10 +106,10 @@ export function ProfileForm({ account, error, pending, saved, onSubmit }: Profil
           rows={4}
           maxLength={2000}
           defaultValue={account?.about ?? ''}
-          className="rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+          className="rounded-lg border border-zinc-200 px-3 py-2 text-base outline-none sm:text-sm focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <TextField
           label="Years of experience"
           name="experienceYears"

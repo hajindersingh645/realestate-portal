@@ -56,3 +56,24 @@ export async function updateMe(
   });
   return await getMe(em, userId);
 }
+
+export interface ServiceUserView {
+  id: string;
+  name: string;
+  phone: string;
+  registeredAs: string;
+  status: string;
+}
+
+/** For other services (lead keeps a buyer's contact): never reached through the gateway. */
+export async function getUserForService(em: Em, userId: string): Promise<ServiceUserView> {
+  const rows = await sql<ServiceUserView>(
+    em,
+    `select id, name, phone, registered_as as "registeredAs", status
+       from users where id = ? and deleted_at is null`,
+    [userId],
+  );
+  const row = rows[0];
+  if (row === undefined) throw new NotFoundError('User not found');
+  return row;
+}

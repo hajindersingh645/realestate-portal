@@ -16,9 +16,11 @@ import { afterAll, afterEach, beforeAll, beforeEach, expect, test } from 'vitest
 import { createIdentityOrm } from '../../orm.js';
 import { syncPermissions } from '../../permissions-sync.js';
 import { openSession } from '../sessions/index.js';
+import { getUserForService } from '../users/users.service.js';
 import {
   createAccount,
   getMyAccount,
+  lookupAccounts,
   resubmitMyAccount,
   updateMyAccount,
   type AccountInput,
@@ -195,6 +197,16 @@ test('createAccount, for a staff user, throws ForbiddenError', async () => {
   await expect(createAccount(orm.em.fork(), actor(staffId), deps, input())).rejects.toBeInstanceOf(
     ForbiddenError,
   );
+});
+
+test('createAccount, for a user registered as a buyer, throws ForbiddenError and creates nothing', async () => {
+  const buyerId = await user('buyer');
+
+  await expect(createAccount(orm.em.fork(), actor(buyerId), deps, input())).rejects.toBeInstanceOf(
+    ForbiddenError,
+  );
+
+  expect(await sql(orm.em.fork(), 'select id from accounts')).toHaveLength(0);
 });
 
 test('createAccount, for names that slugify the same, gives ravi-realty then ravi-realty-2, and never reuses a deleted slug', async () => {
@@ -378,4 +390,40 @@ test('resubmitMyAccount, from rejected, moves to pending and records it; from pe
     'select from_status, to_status from account_transitions order by created_at desc limit 1',
   );
   expect(last).toEqual([{ from_status: 'rejected', to_status: 'pending' }]);
+});
+
+test('lookupAccounts, for an account, an unknown id and a deleted account, returns only the live one', async () => {
+  const live = await createAccount(orm.em.fork(), actor(await user()), deps, input());
+  const gone = await createAccount(
+    orm.em.fork(),
+    actor(await user()),
+    deps,
+    input({ displayName: 'Gone Homes' }),
+  );
+  await sql(orm.em.fork(), 'update accounts set deleted_at = now() where id = ?', [gone.id]);
+
+  const rows = await lookupAccounts(orm.em.fork(), [live.id, gone.id, randomUUID()]);
+
+  expect(rows).toEqual([
+    {
+      id: live.id,
+      slug: 'ravi-realty',
+      displayName: 'Ravi Realty',
+      type: 'agent',
+      licenseNumber: 'PBRERA-SAS80-PR0123',
+      status: 'pending',
+    },
+  ]);
+});
+
+test('getUserForService, for a live user, returns contact and side; for a deleted one, throws NotFoundError', async () => {
+  const id = await user('buyer');
+  const gone = await user('buyer');
+  await sql(orm.em.fork(), 'update users set deleted_at = now() where id = ?', [gone]);
+
+  const found = await getUserForService(orm.em.fork(), id);
+
+  expect(found).toMatchObject({ id, name: 'Ravi', registeredAs: 'buyer', status: 'active' });
+  expect(found.phone).toMatch(/^\+9198\d{8}$/);
+  await expect(getUserForService(orm.em.fork(), gone)).rejects.toBeInstanceOf(NotFoundError);
 });

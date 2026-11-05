@@ -160,3 +160,25 @@ export async function deletePropertyType(em: Em, id: string, actor: Actor): Prom
     await emitReferenceChanged(tx, actor, 'property_type', id, { action: 'deleted' });
   });
 }
+
+export interface InternalPropertyTypeView {
+  id: string;
+  kind: string;
+  isActive: boolean;
+}
+
+/** For other services (lead, listing): kind and whether each type can still be picked. */
+export async function lookupPropertyTypes(
+  em: Em,
+  ids: readonly string[],
+): Promise<InternalPropertyTypeView[]> {
+  if (ids.length === 0) return [];
+  const rows = await sql<{ id: string; kind: string; is_active: boolean }>(
+    em,
+    `select id, kind, is_active from property_types
+      where deleted_at is null and id in (${ids.map(() => '?').join(', ')})
+      order by id`,
+    [...ids],
+  );
+  return rows.map((r) => ({ id: r.id, kind: r.kind, isActive: r.is_active }));
+}

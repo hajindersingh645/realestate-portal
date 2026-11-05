@@ -18,7 +18,7 @@ export async function startMessaging(deps: {
     connection: deps.connection,
     queue: 'identity-service.audit.recorded',
     // Add a service's exchange here when it starts calling audit().
-    exchange: [EXCHANGES.identity, EXCHANGES.catalog],
+    exchange: [EXCHANGES.identity, EXCHANGES.catalog, EXCHANGES.lead],
     keys: [ROUTING_KEYS.auditRecorded],
     handler: async (envelope, em) => {
       await recordAudit(em, envelope);

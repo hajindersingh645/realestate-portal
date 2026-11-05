@@ -135,7 +135,8 @@ function userIdOf(actor: Actor): string {
 
 /**
  * A signed-in user becomes the owner of a new, pending professional account. One account per
- * user (unique index); staff cannot own one. The slug is the first free one of `name`,
+ * user (unique index); only a user who signed up as a professional can own one
+ * (one phone number, one side). The slug is the first free one of `name`,
  * `name-2` … `name-50`, chosen inside the insert; deleted accounts keep their slug.
  */
 export async function createAccount(
@@ -183,13 +184,14 @@ export async function createAccount(
           tx,
           `insert into account_members (id, account_id, user_id, member_role, status, joined_at)
            select ?, ?, u.id, 'owner', 'active', now() from users u
-            where u.id = ? and u.registered_as <> 'staff' and u.deleted_at is null
+            where u.id = ? and u.registered_as = 'professional' and u.deleted_at is null
            returning id`,
           [crypto.randomUUID(), accountId, userId],
         ),
       { unique: 'You already have a professional account' },
     );
-    if (owner[0] === undefined) throw new ForbiddenError('Staff accounts cannot own a profile');
+    if (owner[0] === undefined)
+      throw new ForbiddenError('Only professional sign-ups can own a profile');
     await replaceAreas(tx, accountId, areas);
     await recordTransition(tx, actor, accountId, null, 'pending', null);
     await audit(tx, EXCHANGES.identity, actor, {
@@ -345,4 +347,25 @@ export async function resubmitMyAccount(em: Em, actor: Actor): Promise<MyAccount
     await accessChanged(tx, actor.service, [userId]);
     return await getMyAccount(tx, userId);
   });
+}
+
+export interface AccountLookup {
+  id: string;
+  slug: string;
+  displayName: string;
+  type: AccountType;
+  licenseNumber: string | null;
+  status: AccountStatus;
+}
+
+/** For other services (lead's "Unlocked by"): live accounts among `ids`, any status. */
+export async function lookupAccounts(em: Em, ids: readonly string[]): Promise<AccountLookup[]> {
+  if (ids.length === 0) return [];
+  return await sql<AccountLookup>(
+    em,
+    `select id, slug, display_name as "displayName", type, license_number as "licenseNumber", status
+       from accounts where deleted_at is null and id in (${ids.map(() => '?').join(', ')})
+      order by id`,
+    [...ids],
+  );
 }

@@ -1,6 +1,7 @@
 export const EXCHANGES = {
   catalog: 'catalog.events',
   identity: 'identity.events',
+  lead: 'lead.events',
   dlx: 'dlx.exchange',
 } as const;
 
@@ -14,6 +15,8 @@ export const ROUTING_KEYS = {
   accountRejected: 'account.rejected',
   /** Also sent on a ban, with `status: 'banned'`. */
   accountSuspended: 'account.suspended',
+  requirementApproved: 'requirement.approved',
+  requirementRejected: 'requirement.rejected',
   /** Published on each producing service's own exchange. */
   auditRecorded: 'audit.recorded',
 } as const;

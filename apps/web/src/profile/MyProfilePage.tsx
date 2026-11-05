@@ -37,10 +37,10 @@ export function MyProfilePage() {
   if (me.data === undefined) {
     return <Loader2 aria-label="Loading" className="size-5 animate-spin text-zinc-400" />;
   }
-  const isProfessional =
-    me.data.registeredAs === 'professional' || perms.includes('profile.manage');
-  // Staff can't own a profile (a conflict with approving profiles); identity refuses it too.
-  const canBecomeProfessional = !isProfessional && me.data.registeredAs !== 'staff';
+  // One phone number, one side: only a professional sign-up can own a profile (identity refuses
+  // anyone else). `profile.manage` means they already have one.
+  const canBecomeProfessional =
+    me.data.registeredAs === 'professional' && !perms.includes('profile.manage');
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();

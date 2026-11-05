@@ -11,10 +11,10 @@ export function createTestKeys(): { publicKeyPem: string; privateKey: KeyObject 
 
 export async function signTestToken(
   privateKey: KeyObject,
-  claims: { sub: string; acc?: string; perms?: string[] },
+  claims: { sub: string; acc?: string; accSt?: string; perms?: string[] },
   expiresIn = '10m',
 ): Promise<string> {
-  return await new SignJWT({ acc: claims.acc, perms: claims.perms ?? [] })
+  return await new SignJWT({ acc: claims.acc, accSt: claims.accSt, perms: claims.perms ?? [] })
     .setProtectedHeader({ alg: 'EdDSA' })
     .setSubject(claims.sub)
     .setIssuedAt()

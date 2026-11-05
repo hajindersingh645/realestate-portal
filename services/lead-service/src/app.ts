@@ -1,5 +1,6 @@
 import { createApp, registerAuth, sql, type App, type Orm } from '@hanu/service-kit';
 import type { LeadConfig } from './load-config.js';
+import { registerLeadRoutes } from './modules/leads/index.js';
 import { registerModerationRoutes } from './modules/moderation/index.js';
 import { registerRequirementRoutes } from './modules/requirements/index.js';
 
@@ -22,6 +23,11 @@ export function buildApp(deps: { orm: Orm; config: LeadConfig }): App {
       catalogUrl: deps.config.catalogInternalUrl,
       identityUrl: deps.config.identityInternalUrl,
     },
+  });
+  registerLeadRoutes(app, {
+    orm: deps.orm,
+    serviceName: deps.config.serviceName,
+    identityUrl: deps.config.identityInternalUrl,
   });
   registerModerationRoutes(app, {
     orm: deps.orm,

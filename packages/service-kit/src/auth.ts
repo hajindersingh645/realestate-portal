@@ -6,6 +6,8 @@ import { ForbiddenError, UnauthorizedError } from './errors.js';
 export interface AuthContext {
   userId: string;
   accountId?: string;
+  /** The account's status (`accSt`), e.g. `approved`. */
+  accountStatus?: string;
   perms: string[];
 }
 
@@ -56,6 +58,7 @@ export function registerAuth(app: FastifyInstance, options: { publicKeyPem: stri
     request.auth = {
       userId: claims.sub,
       accountId: typeof claims.acc === 'string' ? claims.acc : undefined,
+      accountStatus: typeof claims.accSt === 'string' ? claims.accSt : undefined,
       perms,
     };
 

@@ -1,6 +1,8 @@
 import type { PermissionKey } from '@hanu/contracts';
 import {
+  BadgeCheck,
   Building2,
+  FileText,
   History,
   ListChecks,
   MapPin,
@@ -25,8 +27,20 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/** Every section of the admin. Later phases add groups here (Approvals, Leads, Billing). */
+/** Every section of the admin. Later phases add groups here (Leads, Billing). */
 export const NAV: NavGroup[] = [
+  {
+    group: 'Professionals',
+    items: [
+      {
+        label: 'Professionals',
+        description: 'Approve, reject and suspend profiles',
+        path: PATHS.professionals,
+        icon: BadgeCheck,
+        permission: 'admin.account.review',
+      },
+    ],
+  },
   {
     group: 'Catalog',
     items: [
@@ -83,6 +97,18 @@ export const NAV: NavGroup[] = [
         path: PATHS.auditLog,
         icon: History,
         permission: 'admin.audit.view',
+      },
+    ],
+  },
+  {
+    group: 'Site',
+    items: [
+      {
+        label: 'Content',
+        description: 'The sign-up data-protection notice',
+        path: PATHS.content,
+        icon: FileText,
+        permission: 'admin.settings.manage',
       },
     ],
   },

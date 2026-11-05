@@ -126,3 +126,20 @@ test('GET /admin/content-blocks, with the permission, lists every version for th
   expect(res.json()).toEqual({ data: [view] });
   expect(vi.mocked(service.listContentBlocks)).toHaveBeenCalledWith(expect.anything(), 'en-IN');
 });
+
+test.each(['//evil.example/privacy', 'javascript:alert(1)', 'http://example.in'])(
+  'POST /admin/content-blocks/:key, with the link address %s, returns 400',
+  async (url) => {
+    const app = buildApp({ orm, config });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: URL,
+      payload: { ...BODY, links: [{ label: 'Privacy', url }] },
+      headers: { authorization: `Bearer ${await token()}` },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(vi.mocked(service.publishContentBlock)).not.toHaveBeenCalled();
+  },
+);

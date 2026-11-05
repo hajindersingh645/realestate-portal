@@ -3,8 +3,8 @@ import { Type } from 'typebox';
 
 export const ContentBlockLink = Type.Object({
   label: Type.String({ minLength: 1, maxLength: 60 }),
-  // Site-relative or https only: shown as a link next to a consent tick box.
-  url: Type.String({ minLength: 1, maxLength: 300, pattern: '^(/|https://)' }),
+  // Site-relative or https only: shown as a link next to a consent tick box. `//host` is another site.
+  url: Type.String({ minLength: 1, maxLength: 300, pattern: '^(/(?!/)|https://)' }),
 });
 
 export const ContentBlockView = Type.Object({

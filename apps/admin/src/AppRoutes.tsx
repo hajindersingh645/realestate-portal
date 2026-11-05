@@ -1,5 +1,8 @@
 import { NotFoundPage, RequireSession } from '@hanu/web-kit';
 import { Route, Routes } from 'react-router';
+import { ContentPage } from './content/ContentPage';
+import { ProfessionalDetailPage } from './professionals/ProfessionalDetailPage';
+import { ProfessionalsPage } from './professionals/ProfessionalsPage';
 import { AuditLogPage } from './access/audit/AuditLogPage';
 import { RolesPage } from './access/roles/RolesPage';
 import { UserDetailPage } from './access/users/UserDetailPage';
@@ -31,6 +34,9 @@ export function AppRoutes() {
           <Route path="/access/users/:id" element={<UserDetailPage />} />
           <Route path={PATHS.roles} element={<RolesPage />} />
           <Route path={PATHS.auditLog} element={<AuditLogPage />} />
+          <Route path={PATHS.professionals} element={<ProfessionalsPage />} />
+          <Route path="/professionals/:id" element={<ProfessionalDetailPage />} />
+          <Route path={PATHS.content} element={<ContentPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage homePath={PATHS.home} />} />

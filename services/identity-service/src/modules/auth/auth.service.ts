@@ -30,9 +30,22 @@ export class InvalidOtpError extends AppError {
   }
 }
 
+/** Asked only the first time a number logs in; ignored for a known number. */
+export interface SignupDetails {
+  name?: string;
+  consent?: boolean;
+  /** The `signup.data_notice` version (catalog content block) the user was shown. */
+  noticeBlockId?: string;
+  registeredAs?: 'buyer' | 'professional';
+}
+
 export class SignupDetailsRequiredError extends AppError {
   constructor() {
-    super('SIGNUP_DETAILS_REQUIRED', 'New number: name and consent are required', 400);
+    super(
+      'SIGNUP_DETAILS_REQUIRED',
+      'New number: name, consent and the notice version are required',
+      400,
+    );
   }
 }
 
@@ -58,7 +71,7 @@ export type LoginResult = { ok: true; tokens: SessionTokens } | { ok: false };
 export async function login(
   em: Em,
   deps: AuthDeps,
-  input: { phone: string; code: string; name?: string; consent?: boolean },
+  input: { phone: string; code: string } & SignupDetails,
   client: Client,
 ): Promise<LoginResult> {
   const phone = phoneOrThrow(input.phone, deps.country);
@@ -79,27 +92,33 @@ async function signUp(
   em: Em,
   deps: AuthDeps,
   phone: string,
-  input: { name?: string; consent?: boolean },
+  input: SignupDetails,
   client: Client,
 ): Promise<string> {
   const name = input.name?.trim() ?? '';
-  if (name === '' || input.consent !== true) throw new SignupDetailsRequiredError();
+  if (name === '' || input.consent !== true || input.noticeBlockId === undefined) {
+    throw new SignupDetailsRequiredError();
+  }
+  const registeredAs = input.registeredAs ?? 'buyer';
   const id = randomUUID();
   await withDbErrors(
     () =>
       sql(
         em,
-        `insert into users (id, registered_as, name, phone, phone_verified_at, consented_at, created_at, updated_at)
-         values (?, 'buyer', ?, ?, now(), now(), now(), now())`,
-        [id, name, phone],
+        `insert into users (id, registered_as, name, phone, phone_verified_at, notice_block_id, consented_at, created_at, updated_at)
+         values (?, ?, ?, ?, now(), ?, now(), now(), now())`,
+        [id, registeredAs, name, phone, input.noticeBlockId],
       ),
     { unique: 'This number is already registered' },
   );
-  await sql(
-    em,
-    `insert into user_roles (user_id, role_id, granted_at) select ?, id, now() from roles where key = 'buyer'`,
-    [id],
-  );
+  // A professional's role comes from their account (created next), not from user_roles.
+  if (registeredAs === 'buyer') {
+    await sql(
+      em,
+      `insert into user_roles (user_id, role_id, granted_at) select ?, id, now() from roles where key = 'buyer'`,
+      [id],
+    );
+  }
   const payload: UserContactPayload = { userId: id, name, phone, email: null };
   await outboxAdd(em, {
     exchange: EXCHANGES.identity,

@@ -104,6 +104,53 @@ test('POST /auth/login, with a five-digit code, returns 400', async () => {
   expect(service.login).not.toHaveBeenCalled();
 });
 
+test('POST /auth/login, signing up as staff or with a notice id that is not a UUID, returns 400', async () => {
+  const { app } = buildTestApp();
+  const base = { phone: '9815012345', code: '123456', name: 'Asha', consent: true };
+
+  const staff = await app.inject({
+    method: 'POST',
+    url: '/auth/login',
+    payload: {
+      ...base,
+      noticeBlockId: '7f1f7f0e-7d5c-4a3e-9b1e-2a8f5a1f6c01',
+      registeredAs: 'staff',
+    },
+  });
+  const badNotice = await app.inject({
+    method: 'POST',
+    url: '/auth/login',
+    payload: { ...base, noticeBlockId: 'v1' },
+  });
+
+  expect(staff.statusCode).toBe(400);
+  expect(badNotice.statusCode).toBe(400);
+  expect(service.login).not.toHaveBeenCalled();
+});
+
+test('POST /auth/login, signing up as a professional, passes the side and notice id to the service', async () => {
+  vi.mocked(service.login).mockResolvedValue({ ok: true, tokens });
+  const { app } = buildTestApp();
+  const payload = {
+    phone: '9815012345',
+    code: '123456',
+    name: 'Ravi',
+    consent: true,
+    noticeBlockId: '7f1f7f0e-7d5c-4a3e-9b1e-2a8f5a1f6c01',
+    registeredAs: 'professional',
+  };
+
+  const res = await app.inject({ method: 'POST', url: '/auth/login', payload });
+
+  expect(res.statusCode).toBe(200);
+  expect(vi.mocked(service.login)).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.anything(),
+    payload,
+    expect.anything(),
+  );
+});
+
 test('POST /auth/refresh, without the cookie, returns 401', async () => {
   const { app } = buildTestApp();
 

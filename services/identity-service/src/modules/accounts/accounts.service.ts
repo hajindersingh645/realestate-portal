@@ -3,17 +3,20 @@ import {
   audit,
   ConflictError,
   ForbiddenError,
-  internalGet,
+  resolveAreas,
   NotFoundError,
   sql,
   uuidv7,
   ValidationError,
   withDbErrors,
   type Actor,
+  type Area,
   type Em,
 } from '@hanu/service-kit';
 import { accessChanged } from '../access/index.js';
 import { slugify } from './slug.js';
+
+export type { Area } from '@hanu/service-kit';
 
 export interface AccountDeps {
   /** catalog-service base URL for `/internal/locations` (inside the network, not the gateway). */
@@ -31,11 +34,6 @@ export interface AccountInput {
 }
 
 export type AccountUpdate = Partial<Omit<AccountInput, 'type'>> & { slug?: string };
-
-export interface Area {
-  locationId: string;
-  cityId: string;
-}
 
 export interface MyAccountView {
   id: string;
@@ -59,33 +57,6 @@ const EDITABLE: readonly AccountStatus[] = ['pending', 'rejected', 'approved'];
 const SLUG_EDITABLE: readonly AccountStatus[] = ['pending', 'rejected'];
 
 const MY_ACCOUNT_ID = `(select account_id from account_members where user_id = ? and status = 'active')`;
-
-interface LocationAnswer {
-  id: string;
-  type: string;
-  cityId: string | null;
-  isActive: boolean;
-}
-
-/**
- * Asks catalog about the areas. Every id must be a live city or locality; the city is copied so
- * later filters by city need no call. Runs before any transaction, so no lock waits on catalog.
- */
-async function resolveAreas(deps: AccountDeps, ids: readonly string[]): Promise<Area[]> {
-  const unique = [...new Set(ids)];
-  const { data } = await internalGet<{ data: LocationAnswer[] }>(
-    deps.catalogUrl,
-    `/internal/locations?ids=${unique.join(',')}`,
-  );
-  const found = new Map(data.map((location) => [location.id, location]));
-  return unique.map((id) => {
-    const location = found.get(id);
-    if (location === undefined || !location.isActive || location.cityId === null) {
-      throw new ValidationError('body/locationIds Each area must be an active city or locality');
-    }
-    return { locationId: id, cityId: location.cityId };
-  });
-}
 
 async function licenseSettings(em: Em): Promise<{ label: string; mandatory: boolean }> {
   // `value` is jsonb, so the driver returns it parsed.
@@ -150,7 +121,7 @@ export async function createAccount(
   if (license.mandatory && (input.licenseNumber ?? '').trim() === '') {
     throw new ValidationError(`body/licenseNumber ${license.label} number is required`);
   }
-  const areas = await resolveAreas(deps, input.locationIds);
+  const areas = await resolveAreas(deps.catalogUrl, input.locationIds);
   const base = slugify(input.displayName);
   return await em.transactional(async (tx) => {
     const accountId = crypto.randomUUID();
@@ -275,7 +246,9 @@ export async function updateMyAccount(
 ): Promise<MyAccountView> {
   const userId = userIdOf(actor);
   const areas =
-    input.locationIds === undefined ? undefined : await resolveAreas(deps, input.locationIds);
+    input.locationIds === undefined
+      ? undefined
+      : await resolveAreas(deps.catalogUrl, input.locationIds);
   return await em.transactional(async (tx) => {
     const before = await getMyAccount(tx, userId);
     const sets: string[] = ['updated_at = now()'];

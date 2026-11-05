@@ -1,7 +1,8 @@
 import { createApp, registerAuth, sql, type App, type Orm } from '@hanu/service-kit';
 import type { LeadConfig } from './load-config.js';
+import { registerRequirementRoutes } from './modules/requirements/index.js';
 
-/** Health and readiness now; requirement, moderation and lead routes are added per module. */
+/** Health, readiness and the lead routes, one module at a time. */
 export function buildApp(deps: { orm: Orm; config: LeadConfig }): App {
   const app = createApp({
     serviceName: deps.config.serviceName,
@@ -13,5 +14,10 @@ export function buildApp(deps: { orm: Orm; config: LeadConfig }): App {
     ],
   });
   registerAuth(app, { publicKeyPem: deps.config.jwtPublicKey });
+  registerRequirementRoutes(app, {
+    orm: deps.orm,
+    serviceName: deps.config.serviceName,
+    requirements: { catalogUrl: deps.config.catalogInternalUrl },
+  });
   return app;
 }

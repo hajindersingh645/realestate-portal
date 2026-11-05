@@ -583,6 +583,9 @@ importers:
       '@mikro-orm/cli':
         specifier: 7.2.4
         version: 7.2.4
+      msw:
+        specifier: ^3.0.3
+        version: 3.0.3(@types/node@24.19.1)(@typescript/typescript6@6.0.2)(vite@8.3.5(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   services/notification-service:
     dependencies:

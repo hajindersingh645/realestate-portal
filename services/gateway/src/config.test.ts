@@ -5,6 +5,7 @@ const full = {
   PORT: '3000',
   CATALOG_URL: 'http://localhost:3002',
   IDENTITY_URL: 'http://localhost:3001',
+  LEAD_URL: 'http://localhost:3003',
   CORS_ORIGINS: 'http://localhost:5173, http://localhost:5174',
   RATE_LIMIT_MAX: '300',
   AUTH_RATE_LIMIT_MAX: '10',
@@ -37,6 +38,7 @@ test('loadGatewayConfig, when every variable is set, returns routes and trimmed 
       upstream: 'http://localhost:3001',
       rewritePrefix: '/admin/identity',
     },
+    { prefix: '/api/v1/lead', upstream: 'http://localhost:3003', rewritePrefix: '/lead' },
   ]);
   expect(config.jwtPublicKey).toBe('line1\nline2');
 });

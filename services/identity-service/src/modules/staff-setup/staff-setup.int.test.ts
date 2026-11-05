@@ -10,6 +10,7 @@ import {
   issueSetupLink,
   SetupLinkInvalidError,
 } from './staff-setup.service.js';
+import { syncPermissions } from '../../permissions-sync.js';
 
 const DB_URL =
   process.env.TEST_IDENTITY_DATABASE_URL ??
@@ -23,6 +24,7 @@ let seq = 0;
 beforeAll(async () => {
   orm = await createIdentityOrm(DB_URL, 'identity');
   await orm.migrator.up();
+  await orm.em.fork().transactional((em) => syncPermissions(em));
 });
 
 beforeEach(async () => {
@@ -81,8 +83,8 @@ test('createStaff, with two roles, creates a staff user without a password, gran
   expect(granted).toHaveLength(2);
   expect(result.setupUrl).toMatch(/^http:\/\/admin\.test\/setup\?token=[\w-]{43}$/);
   const hours = (new Date(result.expiresAt).getTime() - Date.now()) / 3_600_000;
-  expect(hours).toBeGreaterThan(71.9);
-  expect(hours).toBeLessThanOrEqual(72);
+  // The expiry comes from the database clock, which can run a moment ahead of Node's.
+  expect(hours).toBeCloseTo(72, 1);
 });
 
 test('createStaff, when the phone already exists, throws 409 and creates nothing', async () => {

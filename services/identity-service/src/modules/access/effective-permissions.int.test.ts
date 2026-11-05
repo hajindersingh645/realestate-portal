@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 import { createIdentityOrm } from '../../orm.js';
 import { effectivePermissions } from './effective-permissions.js';
+import { syncPermissions } from '../../permissions-sync.js';
 
 const DB_URL =
   process.env.TEST_IDENTITY_DATABASE_URL ??
@@ -13,6 +14,7 @@ let orm: Orm;
 beforeAll(async () => {
   orm = await createIdentityOrm(DB_URL, 'identity');
   await orm.migrator.up();
+  await orm.em.fork().transactional((em) => syncPermissions(em));
 });
 
 afterAll(async () => {

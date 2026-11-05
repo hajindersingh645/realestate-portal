@@ -1,4 +1,4 @@
-import { ErrorBody, type App, type Orm } from '@hanu/service-kit';
+import { ErrorBody, type App, type Orm, actorOf } from '@hanu/service-kit';
 import { Type } from 'typebox';
 import {
   CreateLookupBody,
@@ -44,7 +44,11 @@ export function registerLookupRoutes(app: App, deps: { orm: Orm; serviceName: st
       },
     },
     async (request, reply) => {
-      const lookup = await createLookup(deps.orm.em.fork(), request.body, deps.serviceName);
+      const lookup = await createLookup(
+        deps.orm.em.fork(),
+        request.body,
+        actorOf(request, deps.serviceName),
+      );
       return reply.status(201).send(lookup);
     },
   );
@@ -66,7 +70,12 @@ export function registerLookupRoutes(app: App, deps: { orm: Orm; serviceName: st
       },
     },
     async (request) =>
-      await updateLookup(deps.orm.em.fork(), request.params.id, request.body, deps.serviceName),
+      await updateLookup(
+        deps.orm.em.fork(),
+        request.params.id,
+        request.body,
+        actorOf(request, deps.serviceName),
+      ),
   );
 
   app.delete(
@@ -85,7 +94,7 @@ export function registerLookupRoutes(app: App, deps: { orm: Orm; serviceName: st
       },
     },
     async (request, reply) => {
-      await deleteLookup(deps.orm.em.fork(), request.params.id, deps.serviceName);
+      await deleteLookup(deps.orm.em.fork(), request.params.id, actorOf(request, deps.serviceName));
       return reply.status(204).send(null);
     },
   );

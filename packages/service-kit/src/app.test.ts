@@ -100,3 +100,16 @@ test('any response, when the request carried x-request-id, echoes it', async () 
 
   expect(res.headers['x-request-id']).toBe('r-1');
 });
+
+test('the logger, when an event envelope with an OTP is logged, redacts the code and phone', () => {
+  const lines: string[] = [];
+  const app = createApp({ serviceName: 'test', logStream: { write: (line) => lines.push(line) } });
+  const envelope = { eventId: 'e1', payload: { phone: '+919815012345', code: '123456' } };
+
+  app.log.info({ envelope }, 'received');
+
+  const logged = lines.join('');
+  expect(logged).not.toContain('9815012345');
+  expect(logged).not.toContain('123456');
+  expect(logged).toContain('[Redacted]');
+});

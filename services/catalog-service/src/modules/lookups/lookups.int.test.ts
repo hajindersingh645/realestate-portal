@@ -19,7 +19,7 @@ import { createLookup, deleteLookup, listLookups, updateLookup } from './lookups
 const DB_URL =
   process.env.TEST_CATALOG_DATABASE_URL ??
   'postgresql://svc_catalog:svc_catalog@localhost:5433/real_estate_test';
-const P = 'catalog-service';
+const P = { service: 'catalog-service', userId: null, ip: null };
 
 let orm: Orm;
 let connection: RabbitConnection;
@@ -48,7 +48,9 @@ function input(code = '2_bhk') {
 }
 
 async function outboxCount(): Promise<number> {
-  return (await sql(orm.em.fork(), 'select id from outbox_events')).length;
+  return (
+    await sql(orm.em.fork(), "select id from outbox_events where routing_key = 'reference.changed'")
+  ).length;
 }
 
 test('createLookup, with new values, saves the row and one reference.changed event', async () => {
@@ -58,7 +60,7 @@ test('createLookup, with new values, saves the row and one reference.changed eve
   expect(rows).toEqual([{ ...created, meta: null, isActive: true }]);
   const events = await sql<{ routing_key: string; envelope: EventEnvelope }>(
     orm.em.fork(),
-    'select routing_key, envelope from outbox_events',
+    "select routing_key, envelope from outbox_events where routing_key = 'reference.changed'",
   );
   expect(events).toHaveLength(1);
   expect(events[0]?.routing_key).toBe('reference.changed');

@@ -19,6 +19,7 @@
     "services/*/mikro-orm.config.ts",
     "scripts",
     "*.config.ts",
-    "vitest.swc.ts"
+    "vitest.swc.ts",
+    "vitest.int.global-setup.ts"
   ]
 }

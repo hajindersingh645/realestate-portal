@@ -8,3 +8,5 @@ export * from './rabbit.js';
 export * from './subscribe.js';
 export * from './migrations.js';
 export * from './db-errors.js';
+export * from './audit.js';
+export * from './ids.js';

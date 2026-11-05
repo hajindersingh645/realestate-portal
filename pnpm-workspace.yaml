@@ -2,5 +2,8 @@ packages:
   - packages/*
   - services/*
 allowBuilds:
+  argon2: true
   '@swc/core': true
   esbuild: true
+minimumReleaseAgeExclude:
+  - argon2@0.45.2

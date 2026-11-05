@@ -1,4 +1,4 @@
-import { ErrorBody, type App, type Orm } from '@hanu/service-kit';
+import { ErrorBody, type App, type Orm, actorOf } from '@hanu/service-kit';
 import { Type } from 'typebox';
 import {
   CreatePropertyTypeBody,
@@ -45,7 +45,11 @@ export function registerPropertyTypeRoutes(
       },
     },
     async (request, reply) => {
-      const type = await createPropertyType(deps.orm.em.fork(), request.body, deps.serviceName);
+      const type = await createPropertyType(
+        deps.orm.em.fork(),
+        request.body,
+        actorOf(request, deps.serviceName),
+      );
       return reply.status(201).send(type);
     },
   );
@@ -71,7 +75,7 @@ export function registerPropertyTypeRoutes(
         deps.orm.em.fork(),
         request.params.id,
         request.body,
-        deps.serviceName,
+        actorOf(request, deps.serviceName),
       ),
   );
 
@@ -92,7 +96,11 @@ export function registerPropertyTypeRoutes(
       },
     },
     async (request, reply) => {
-      await deletePropertyType(deps.orm.em.fork(), request.params.id, deps.serviceName);
+      await deletePropertyType(
+        deps.orm.em.fork(),
+        request.params.id,
+        actorOf(request, deps.serviceName),
+      );
       return reply.status(204).send(null);
     },
   );

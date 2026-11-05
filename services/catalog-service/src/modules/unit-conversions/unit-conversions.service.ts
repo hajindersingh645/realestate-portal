@@ -1,5 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { NotFoundError, sql, ValidationError, withDbErrors, type Em } from '@hanu/service-kit';
+import {
+  NotFoundError,
+  sql,
+  ValidationError,
+  withDbErrors,
+  type Em,
+  type Actor,
+} from '@hanu/service-kit';
 import { emitReferenceChanged } from '../../reference-changed.js';
 import { UnitConversion } from './unit-conversion.entity.js';
 
@@ -40,7 +47,7 @@ export async function listUnitConversions(em: Em): Promise<UnitConversionView[]>
 export async function createUnitConversion(
   em: Em,
   input: CreateUnitConversionInput,
-  producer: string,
+  actor: Actor,
 ): Promise<UnitConversionView> {
   const view: UnitConversionView = {
     id: randomUUID(),
@@ -73,7 +80,10 @@ export async function createUnitConversion(
           ],
         );
         if (rows.length === 0) throw new ValidationError(BAD_TARGET);
-        await emitReferenceChanged(tx, producer, 'unit_conversion', view.id);
+        await emitReferenceChanged(tx, actor, 'unit_conversion', view.id, {
+          action: 'created',
+          after: view,
+        });
         return view;
       }),
     {
@@ -88,24 +98,30 @@ export async function updateUnitConversion(
   em: Em,
   id: string,
   patch: { factor: number },
-  producer: string,
+  actor: Actor,
 ): Promise<UnitConversionView> {
   return await withDbErrors(
     () =>
       em.transactional(async (tx) => {
         const conversion = await tx.findOne(UnitConversion, { id });
         if (conversion === null) throw new NotFoundError('Unit conversion not found');
+        const before = toUnitConversionView(conversion);
         conversion.factor = patch.factor;
         await tx.flush();
-        await emitReferenceChanged(tx, producer, 'unit_conversion', conversion.id);
-        return toUnitConversionView(conversion);
+        const after = toUnitConversionView(conversion);
+        await emitReferenceChanged(tx, actor, 'unit_conversion', conversion.id, {
+          action: 'updated',
+          before,
+          after,
+        });
+        return after;
       }),
     { check: 'The factor must be greater than zero' },
   );
 }
 
 /** Soft delete. A city whose override is deleted falls back to the default factor. */
-export async function deleteUnitConversion(em: Em, id: string, producer: string): Promise<void> {
+export async function deleteUnitConversion(em: Em, id: string, actor: Actor): Promise<void> {
   await em.transactional(async (tx) => {
     const rows = await sql(
       tx,
@@ -114,6 +130,6 @@ export async function deleteUnitConversion(em: Em, id: string, producer: string)
       [id],
     );
     if (rows.length === 0) throw new NotFoundError('Unit conversion not found');
-    await emitReferenceChanged(tx, producer, 'unit_conversion', id);
+    await emitReferenceChanged(tx, actor, 'unit_conversion', id, { action: 'deleted' });
   });
 }

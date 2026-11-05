@@ -1,4 +1,4 @@
-import { ErrorBody, type App, type Orm } from '@hanu/service-kit';
+import { ErrorBody, type App, type Orm, actorOf } from '@hanu/service-kit';
 import { Type } from 'typebox';
 import {
   CreateUnitConversionBody,
@@ -48,7 +48,7 @@ export function registerUnitConversionRoutes(
       const conversion = await createUnitConversion(
         deps.orm.em.fork(),
         request.body,
-        deps.serviceName,
+        actorOf(request, deps.serviceName),
       );
       return reply.status(201).send(conversion);
     },
@@ -75,7 +75,7 @@ export function registerUnitConversionRoutes(
         deps.orm.em.fork(),
         request.params.id,
         request.body,
-        deps.serviceName,
+        actorOf(request, deps.serviceName),
       ),
   );
 
@@ -95,7 +95,11 @@ export function registerUnitConversionRoutes(
       },
     },
     async (request, reply) => {
-      await deleteUnitConversion(deps.orm.em.fork(), request.params.id, deps.serviceName);
+      await deleteUnitConversion(
+        deps.orm.em.fork(),
+        request.params.id,
+        actorOf(request, deps.serviceName),
+      );
       return reply.status(204).send(null);
     },
   );

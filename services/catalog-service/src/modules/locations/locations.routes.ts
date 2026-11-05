@@ -1,4 +1,4 @@
-import { ErrorBody, type App, type Orm } from '@hanu/service-kit';
+import { ErrorBody, type App, type Orm, actorOf } from '@hanu/service-kit';
 import { Type } from 'typebox';
 import {
   CreateLocationBody,
@@ -53,7 +53,11 @@ export function registerLocationRoutes(app: App, deps: { orm: Orm; serviceName: 
       },
     },
     async (request, reply) => {
-      const location = await createLocation(deps.orm.em.fork(), request.body, deps.serviceName);
+      const location = await createLocation(
+        deps.orm.em.fork(),
+        request.body,
+        actorOf(request, deps.serviceName),
+      );
       return reply.status(201).send(location);
     },
   );
@@ -75,7 +79,12 @@ export function registerLocationRoutes(app: App, deps: { orm: Orm; serviceName: 
       },
     },
     async (request) =>
-      await updateLocation(deps.orm.em.fork(), request.params.id, request.body, deps.serviceName),
+      await updateLocation(
+        deps.orm.em.fork(),
+        request.params.id,
+        request.body,
+        actorOf(request, deps.serviceName),
+      ),
   );
 
   app.delete(
@@ -95,7 +104,11 @@ export function registerLocationRoutes(app: App, deps: { orm: Orm; serviceName: 
       },
     },
     async (request, reply) => {
-      await deleteLocation(deps.orm.em.fork(), request.params.id, deps.serviceName);
+      await deleteLocation(
+        deps.orm.em.fork(),
+        request.params.id,
+        actorOf(request, deps.serviceName),
+      );
       return reply.status(204).send(null);
     },
   );

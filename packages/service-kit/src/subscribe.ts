@@ -7,7 +7,8 @@ export interface SubscribeOptions<T> {
   orm: Orm;
   connection: RabbitConnection;
   queue: string;
-  exchange: string;
+  /** One exchange, or several (e.g. `audit.recorded` arrives on every service's exchange). */
+  exchange: string | string[];
   keys: string[];
   handler: (envelope: EventEnvelope<T>, em: Em) => Promise<void>;
   onError?: (error: unknown, eventId?: string) => void;
@@ -31,7 +32,9 @@ export async function subscribe<T = unknown>(
   channel.on('error', (error: unknown) => options.onError?.(error));
   await channel.prefetch(10);
 
-  await channel.assertExchange(options.exchange, 'topic', { durable: true });
+  const exchanges = Array.isArray(options.exchange) ? options.exchange : [options.exchange];
+  for (const exchange of exchanges)
+    await channel.assertExchange(exchange, 'topic', { durable: true });
   await channel.assertExchange(EXCHANGES.dlx, 'topic', { durable: true });
   await channel.assertQueue(dlq, { durable: true, arguments: { 'x-queue-type': 'quorum' } });
   await channel.bindQueue(dlq, EXCHANGES.dlx, queue);
@@ -44,7 +47,9 @@ export async function subscribe<T = unknown>(
       'x-dead-letter-routing-key': queue,
     },
   });
-  for (const key of options.keys) await channel.bindQueue(queue, options.exchange, key);
+  for (const exchange of exchanges) {
+    for (const key of options.keys) await channel.bindQueue(queue, exchange, key);
+  }
 
   let closed = false;
 
@@ -74,6 +79,58 @@ export async function subscribe<T = unknown>(
       return;
     }
     if (!closed) channel.ack(message); // only after the transaction has committed
+  }
+
+  await channel.consume(
+    queue,
+    (message) => {
+      if (message !== null) void handle(message);
+    },
+    { noAck: false },
+  );
+
+  return {
+    async close(): Promise<void> {
+      closed = true;
+      await channel.close();
+    },
+  };
+}
+
+export interface StatelessSubscribeOptions<T> {
+  connection: RabbitConnection;
+  exchange: string;
+  keys: string[];
+  /** Must be safe to repeat and must not need the database (e.g. setting a map entry). */
+  handler: (envelope: EventEnvelope<T>) => void | Promise<void>;
+  onError?: (error: unknown, eventId?: string) => void;
+}
+
+/**
+ * Every process gets its own copy of each event: a private, server-named queue that disappears
+ * with the connection. No inbox and no dead-letter queue. For in-memory state that each instance
+ * keeps (the gateway's revocation list); an exception to the durable quorum queue rule.
+ */
+export async function subscribeStateless<T = unknown>(
+  options: StatelessSubscribeOptions<T>,
+): Promise<{ close(): Promise<void> }> {
+  const channel = await options.connection.createChannel();
+  channel.on('error', (error: unknown) => options.onError?.(error));
+  await channel.assertExchange(options.exchange, 'topic', { durable: true });
+  const { queue } = await channel.assertQueue('', { exclusive: true, autoDelete: true });
+  for (const key of options.keys) await channel.bindQueue(queue, options.exchange, key);
+
+  let closed = false;
+
+  async function handle(message: ConsumeMessage): Promise<void> {
+    const envelope = parseEnvelope(message.content);
+    try {
+      if (envelope !== null) await options.handler(envelope as EventEnvelope<T>);
+    } catch (error: unknown) {
+      // Redelivering to the same process would fail the same way: report it and move on.
+      options.onError?.(error, envelope?.eventId);
+    }
+    if (!closed) channel.ack(message);
   }
 
   await channel.consume(

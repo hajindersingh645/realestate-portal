@@ -68,7 +68,7 @@ test('POST /admin/property-types, with a valid body, returns 201 and the new typ
   expect(service.createPropertyType).toHaveBeenCalledWith(
     expect.anything(),
     { slug: 'flat', name: 'Flat', kind: 'flat', sort: 1 },
-    'catalog-service',
+    expect.objectContaining({ service: 'catalog-service' }),
   );
 });
 
@@ -137,7 +137,11 @@ test('DELETE /admin/property-types/:id, when the type exists, returns 204', asyn
   });
 
   expect(res.statusCode).toBe(204);
-  expect(service.deletePropertyType).toHaveBeenCalledWith(expect.anything(), ID, 'catalog-service');
+  expect(service.deletePropertyType).toHaveBeenCalledWith(
+    expect.anything(),
+    ID,
+    expect.objectContaining({ service: 'catalog-service' }),
+  );
 });
 
 test('DELETE /admin/property-types/:id, when it still has live sub-types, returns 409', async () => {
@@ -202,6 +206,6 @@ test('PATCH /admin/property-types/:id, with a name and an unknown key, drops the
     expect.anything(),
     ID,
     { name: 'Apartment' },
-    'catalog-service',
+    expect.objectContaining({ service: 'catalog-service' }),
   );
 });

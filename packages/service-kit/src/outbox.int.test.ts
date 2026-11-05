@@ -3,6 +3,7 @@ import type { EventEnvelope } from '@hanu/contracts';
 import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest';
 import { createOrm, INFRA_STATEMENTS, sql, type Orm } from './db.js';
 import { KitProbe } from './kit-probe.fixture.js';
+import { audit } from './audit.js';
 import { createOutboxRelay, outboxAdd } from './outbox.js';
 import {
   assertExchanges,
@@ -109,4 +110,34 @@ test('relay.tick, when the broker rejects the publish, leaves the event unsent a
   await orm.em.fork().transactional((em) => outboxAdd(em, event()));
   expect(await relay.tick()).toBe(1);
   await relay.stop();
+});
+
+test('audit, inside a transaction, adds one audit.recorded event with the actor and diff', async () => {
+  const actor = { service: 'kit-test', userId: randomUUID(), ip: '127.0.0.1' };
+
+  const eventId = await orm.em.fork().transactional((em) =>
+    audit(em, 'kittest.events', actor, {
+      action: 'probe.updated',
+      targetType: 'probe',
+      targetId: 'p1',
+      diff: { before: { n: 1 }, after: { n: 2 } },
+    }),
+  );
+
+  const rows = await sql<{ routing_key: string; envelope: { payload: unknown } }>(
+    orm.em.fork(),
+    'select routing_key, envelope from outbox_events where id = ?',
+    [eventId],
+  );
+  expect(rows).toHaveLength(1);
+  expect(rows[0]?.routing_key).toBe('audit.recorded');
+  expect(rows[0]?.envelope.payload).toEqual({
+    actorUserId: actor.userId,
+    service: 'kit-test',
+    action: 'probe.updated',
+    targetType: 'probe',
+    targetId: 'p1',
+    diff: { before: { n: 1 }, after: { n: 2 } },
+    ip: '127.0.0.1',
+  });
 });

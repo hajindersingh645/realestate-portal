@@ -113,7 +113,7 @@ test('DELETE /admin/unit-conversions/:id, when the conversion exists, returns 20
   expect(service.deleteUnitConversion).toHaveBeenCalledWith(
     expect.anything(),
     ID,
-    'catalog-service',
+    expect.objectContaining({ service: 'catalog-service' }),
   );
 });
 

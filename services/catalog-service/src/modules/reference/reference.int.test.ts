@@ -10,7 +10,7 @@ import { getReference } from './reference.service.js';
 const DB_URL =
   process.env.TEST_CATALOG_DATABASE_URL ??
   'postgresql://svc_catalog:svc_catalog@localhost:5433/real_estate_test';
-const P = 'catalog-service';
+const P = { service: 'catalog-service', userId: null, ip: null };
 const platform = {
   country: 'IN',
   currency: 'INR',

@@ -53,6 +53,24 @@ export async function sql<T = Record<string, unknown>>(
   }
 }
 
+/**
+ * Migration SQL that takes UPDATE, DELETE and TRUNCATE on `tables` away from the service's
+ * runtime role, so rows can be added but never changed. Migrations run as the schema owner
+ * `svc_<s>`; the runtime role is `svc_<s>_app` (see infra/postgres/init.sql).
+ * `tables` must be constants written in code, never input.
+ */
+export function appendOnlySql(tables: readonly string[]): string {
+  return `do $$ begin
+     execute format('revoke update, delete, truncate on ${tables.join(', ')} from %I', current_user || '_app');
+   end $$`;
+}
+
+/** Migration SQL that gives the runtime role data access to every table that exists now. */
+export const GRANT_RUNTIME_SQL = `do $$ begin
+   execute format('grant select, insert, update, delete on all tables in schema %I to %I',
+                  current_schema(), current_user || '_app');
+ end $$`;
+
 /** Tables every service owns. Each service's first migration runs these. */
 export const INFRA_STATEMENTS: readonly string[] = [
   `create table if not exists outbox_events (
@@ -99,4 +117,5 @@ export const INFRA_STATEMENTS: readonly string[] = [
    )`,
   `create index if not exists state_transitions_entity
      on state_transitions (entity_type, entity_id, created_at)`,
+  appendOnlySql(['settings', 'state_transitions']),
 ];

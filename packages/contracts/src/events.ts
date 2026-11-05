@@ -1,10 +1,17 @@
 export const EXCHANGES = {
   catalog: 'catalog.events',
+  identity: 'identity.events',
   dlx: 'dlx.exchange',
 } as const;
 
 export const ROUTING_KEYS = {
   referenceChanged: 'reference.changed',
+  otpRequested: 'otp.requested',
+  userRegistered: 'user.registered',
+  userContactChanged: 'user.contact.changed',
+  userAccessChanged: 'user.access.changed',
+  /** Published on each producing service's own exchange. */
+  auditRecorded: 'audit.recorded',
 } as const;
 
 export interface EventEnvelope<T = unknown> {
@@ -38,4 +45,15 @@ export type ReferenceEntity = (typeof REFERENCE_ENTITIES)[number];
 export interface ReferenceChangedPayload {
   entity: ReferenceEntity;
   id: string;
+}
+
+/** One admin or user action, recorded by identity-service in `audit_logs`. */
+export interface AuditRecordedPayload {
+  actorUserId: string | null; // null for scripts (seed, create-admin)
+  service: string;
+  action: string; // e.g. 'lookup.updated'
+  targetType: string;
+  targetId: string;
+  diff: { before?: unknown; after?: unknown } | null;
+  ip: string | null;
 }

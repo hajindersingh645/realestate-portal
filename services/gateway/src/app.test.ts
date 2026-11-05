@@ -3,7 +3,7 @@ import { buildGateway } from './app.js';
 
 function build(rateLimitMax = 100) {
   return buildGateway({
-    routes: [{ prefix: '/api/v1/catalog', upstream: 'http://127.0.0.1:1' }],
+    routes: [{ prefix: '/api/v1/catalog', upstream: 'http://127.0.0.1:1', rewritePrefix: '' }],
     corsOrigins: ['http://localhost:5173'],
     rateLimitMax,
     logLevel: 'silent',

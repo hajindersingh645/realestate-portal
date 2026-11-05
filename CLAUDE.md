@@ -23,7 +23,7 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 - Service code never imports `amqplib`; use `outbox.add()` and `subscribe()` from the kit.
 - Consumers must be safe to run twice.
 - Limits and state changes are enforced in SQL (`WHERE` conditions, unique constraints), not in application `if`s.
-- Every route has a TypeBox schema and either `permission` or `public: true`.
+- Every route has a TypeBox schema and one of `permission`, `authenticated: true` (any signed-in user) or `public: true`.
 - Money is `bigint` in minor units, with no currency in column names (`amount`, `price`). Country, currency, locale and timezone come from `PLATFORM_*` env vars (one deployment per country).
 - IDs are UUIDs. Prices, quotas and limits are settings rows, never constants.
 - All `@mikro-orm/*` packages share one exact version (no `^`).
@@ -36,7 +36,7 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 
 ## Local defaults
 
-- PostgreSQL: `postgresql://postgres:postgres@localhost:5433/real_estate` (one schema and role per service; host port 5433 so it does not clash with a Postgres already on 5432)
+- PostgreSQL: `postgresql://postgres:postgres@localhost:5433/real_estate` (host port 5433 so it does not clash with a Postgres already on 5432). One schema and two roles per service: `svc_<s>` owns the schema and runs migrations (`MIGRATION_DATABASE_URL`); `svc_<s>_app` is what the service runs as (`DATABASE_URL`) and cannot update or delete append-only tables
 - RabbitMQ: `amqp://guest:guest@localhost:5672` · management UI `http://localhost:15672`
 
 ## Commands
@@ -46,10 +46,11 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 - Migrate all services: `pnpm migrate`
 - Seed master data: `pnpm seed` (safe to repeat)
 - Draft a migration from entity changes: `pnpm --filter <service> migration:create --name <what>`, then `pnpm format`, read it, and add the class to `MIGRATIONS` in `orm.ts`
-- Run all services: `pnpm dev` (gateway :3000, catalog-service :3002)
+- Run all services: `pnpm dev` (gateway :3000, identity-service :3001, catalog-service :3002, notification-service :3006)
 - Lint and format check: `pnpm lint` · fix formatting: `pnpm format`
 - Type check: `pnpm typecheck`
 - Unit and route tests: `pnpm test`
 - Integration tests (need infra; stop `pnpm dev` first): `pnpm test:int`
-- Dev token for guarded routes: `pnpm --silent dev:token <permission> [...]`
+- First super admin (asks for the password): `pnpm --filter identity-service create-admin --email <e> --phone <p> --name <n>`
+- OTP codes in development: printed by notification-service (`sms to …`)
 - Security scan: `snyk test`

@@ -14,7 +14,7 @@ import {
 const DB_URL =
   process.env.TEST_CATALOG_DATABASE_URL ??
   'postgresql://svc_catalog:svc_catalog@localhost:5433/real_estate_test';
-const P = 'catalog-service';
+const P = { service: 'catalog-service', userId: null, ip: null };
 
 let orm: Orm;
 let marlaId: string;
@@ -120,7 +120,12 @@ test('updateUnitConversion, with a new factor, changes it and emits an event', a
   const updated = await updateUnitConversion(orm.em.fork(), created.id, { factor: 272.25 }, P);
 
   expect(updated.factor).toBe(272.25);
-  expect(await sql(orm.em.fork(), 'select id from outbox_events')).toHaveLength(1);
+  expect(
+    await sql(
+      orm.em.fork(),
+      "select id from outbox_events where routing_key = 'reference.changed'",
+    ),
+  ).toHaveLength(1);
 });
 
 test('deleteUnitConversion, on a city override, hides it and allows adding it again', async () => {

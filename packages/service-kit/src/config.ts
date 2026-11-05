@@ -3,7 +3,13 @@ export interface ServiceConfig {
   logLevel: string;
   serviceName: string;
   port: number;
+  /** The runtime role (`svc_<s>_app`): data access only. */
   databaseUrl: string;
+  /**
+   * The schema owner (`svc_<s>`), for `migrate.ts` only. Optional so that a running service's
+   * environment never needs the owner's password.
+   */
+  migrationDatabaseUrl: string | undefined;
   dbSchema: string;
   rabbitmqUrl: string;
   jwtPublicKey: string;
@@ -51,12 +57,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServiceConfig 
     throw new Error('PORT must be a positive integer');
   }
 
+  const migrationUrl = env.MIGRATION_DATABASE_URL?.trim();
+
   return {
     nodeEnv: env.NODE_ENV ?? 'development',
     logLevel: env.LOG_LEVEL ?? 'info',
     serviceName: get('SERVICE_NAME'),
     port,
     databaseUrl: get('DATABASE_URL'),
+    migrationDatabaseUrl: migrationUrl === '' ? undefined : migrationUrl,
     dbSchema: get('DB_SCHEMA'),
     rabbitmqUrl: get('RABBITMQ_URL'),
     jwtPublicKey: get('JWT_PUBLIC_KEY').replaceAll('\\n', '\n'),

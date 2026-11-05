@@ -3,3 +3,4 @@ export * from './permissions.js';
 export * from './catalog.js';
 export * from './area.js';
 export * from './identity.js';
+export * from './lead.js';

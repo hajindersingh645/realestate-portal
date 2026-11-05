@@ -3,17 +3,20 @@ import {
   audit,
   ConflictError,
   ForbiddenError,
-  internalGet,
+  resolveAreas,
   NotFoundError,
   sql,
   uuidv7,
   ValidationError,
   withDbErrors,
   type Actor,
+  type Area,
   type Em,
 } from '@hanu/service-kit';
 import { accessChanged } from '../access/index.js';
 import { slugify } from './slug.js';
+
+export type { Area } from '@hanu/service-kit';
 
 export interface AccountDeps {
   /** catalog-service base URL for `/internal/locations` (inside the network, not the gateway). */
@@ -31,11 +34,6 @@ export interface AccountInput {
 }
 
 export type AccountUpdate = Partial<Omit<AccountInput, 'type'>> & { slug?: string };
-
-export interface Area {
-  locationId: string;
-  cityId: string;
-}
 
 export interface MyAccountView {
   id: string;
@@ -59,33 +57,6 @@ const EDITABLE: readonly AccountStatus[] = ['pending', 'rejected', 'approved'];
 const SLUG_EDITABLE: readonly AccountStatus[] = ['pending', 'rejected'];
 
 const MY_ACCOUNT_ID = `(select account_id from account_members where user_id = ? and status = 'active')`;
-
-interface LocationAnswer {
-  id: string;
-  type: string;
-  cityId: string | null;
-  isActive: boolean;
-}
-
-/**
- * Asks catalog about the areas. Every id must be a live city or locality; the city is copied so
- * later filters by city need no call. Runs before any transaction, so no lock waits on catalog.
- */
-async function resolveAreas(deps: AccountDeps, ids: readonly string[]): Promise<Area[]> {
-  const unique = [...new Set(ids)];
-  const { data } = await internalGet<{ data: LocationAnswer[] }>(
-    deps.catalogUrl,
-    `/internal/locations?ids=${unique.join(',')}`,
-  );
-  const found = new Map(data.map((location) => [location.id, location]));
-  return unique.map((id) => {
-    const location = found.get(id);
-    if (location === undefined || !location.isActive || location.cityId === null) {
-      throw new ValidationError('body/locationIds Each area must be an active city or locality');
-    }
-    return { locationId: id, cityId: location.cityId };
-  });
-}
 
 async function licenseSettings(em: Em): Promise<{ label: string; mandatory: boolean }> {
   // `value` is jsonb, so the driver returns it parsed.
@@ -135,7 +106,8 @@ function userIdOf(actor: Actor): string {
 
 /**
  * A signed-in user becomes the owner of a new, pending professional account. One account per
- * user (unique index); staff cannot own one. The slug is the first free one of `name`,
+ * user (unique index); only a user who signed up as a professional can own one
+ * (one phone number, one side). The slug is the first free one of `name`,
  * `name-2` … `name-50`, chosen inside the insert; deleted accounts keep their slug.
  */
 export async function createAccount(
@@ -149,7 +121,7 @@ export async function createAccount(
   if (license.mandatory && (input.licenseNumber ?? '').trim() === '') {
     throw new ValidationError(`body/licenseNumber ${license.label} number is required`);
   }
-  const areas = await resolveAreas(deps, input.locationIds);
+  const areas = await resolveAreas(deps.catalogUrl, input.locationIds);
   const base = slugify(input.displayName);
   return await em.transactional(async (tx) => {
     const accountId = crypto.randomUUID();
@@ -183,13 +155,14 @@ export async function createAccount(
           tx,
           `insert into account_members (id, account_id, user_id, member_role, status, joined_at)
            select ?, ?, u.id, 'owner', 'active', now() from users u
-            where u.id = ? and u.registered_as <> 'staff' and u.deleted_at is null
+            where u.id = ? and u.registered_as = 'professional' and u.deleted_at is null
            returning id`,
           [crypto.randomUUID(), accountId, userId],
         ),
       { unique: 'You already have a professional account' },
     );
-    if (owner[0] === undefined) throw new ForbiddenError('Staff accounts cannot own a profile');
+    if (owner[0] === undefined)
+      throw new ForbiddenError('Only professional sign-ups can own a profile');
     await replaceAreas(tx, accountId, areas);
     await recordTransition(tx, actor, accountId, null, 'pending', null);
     await audit(tx, EXCHANGES.identity, actor, {
@@ -273,7 +246,9 @@ export async function updateMyAccount(
 ): Promise<MyAccountView> {
   const userId = userIdOf(actor);
   const areas =
-    input.locationIds === undefined ? undefined : await resolveAreas(deps, input.locationIds);
+    input.locationIds === undefined
+      ? undefined
+      : await resolveAreas(deps.catalogUrl, input.locationIds);
   return await em.transactional(async (tx) => {
     const before = await getMyAccount(tx, userId);
     const sets: string[] = ['updated_at = now()'];
@@ -345,4 +320,25 @@ export async function resubmitMyAccount(em: Em, actor: Actor): Promise<MyAccount
     await accessChanged(tx, actor.service, [userId]);
     return await getMyAccount(tx, userId);
   });
+}
+
+export interface AccountLookup {
+  id: string;
+  slug: string;
+  displayName: string;
+  type: AccountType;
+  licenseNumber: string | null;
+  status: AccountStatus;
+}
+
+/** For other services (lead's "Unlocked by"): live accounts among `ids`, any status. */
+export async function lookupAccounts(em: Em, ids: readonly string[]): Promise<AccountLookup[]> {
+  if (ids.length === 0) return [];
+  return await sql<AccountLookup>(
+    em,
+    `select id, slug, display_name as "displayName", type, license_number as "licenseNumber", status
+       from accounts where deleted_at is null and id in (${ids.map(() => '?').join(', ')})
+      order by id`,
+    [...ids],
+  );
 }

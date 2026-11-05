@@ -161,3 +161,13 @@ test('ProfessionalPage, for a staff user, explains why there is no form', async 
   ).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Send for review' })).not.toBeInTheDocument();
 });
+
+test('ProfessionalPage, for a buyer, explains that one number is one side and shows no form', async () => {
+  signedIn(['requirement.create'], 'buyer');
+  server.use(http.get('/api/v1/accounts/me', NO_ACCOUNT));
+
+  renderApp('/professional');
+
+  expect(await screen.findByText(/This number is registered as a buyer/)).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Send for review' })).not.toBeInTheDocument();
+});

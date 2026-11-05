@@ -3,6 +3,7 @@ import { createApp, registerAuth, sql, type App, type Orm } from '@hanu/service-
 import type { IdentityConfig } from './load-config.js';
 import { registerAccessRoutes } from './modules/access/index.js';
 import {
+  registerAccountInternalRoutes,
   registerAccountReviewRoutes,
   registerAccountRoutes,
   registerProfessionalRoutes,
@@ -11,7 +12,11 @@ import { registerAuditLogRoutes } from './modules/audit-logs/index.js';
 import { registerAuthRoutes } from './modules/auth/index.js';
 import { registerStaffAuthRoutes } from './modules/staff-auth/index.js';
 import { registerStaffSetupRoutes } from './modules/staff-setup/index.js';
-import { registerAdminUserRoutes, registerUserRoutes } from './modules/users/index.js';
+import {
+  registerAdminUserRoutes,
+  registerUserInternalRoutes,
+  registerUserRoutes,
+} from './modules/users/index.js';
 import { loadSigningKey } from './tokens.js';
 
 export function buildApp(deps: { orm: Orm; config: IdentityConfig }): App {
@@ -54,6 +59,8 @@ export function buildApp(deps: { orm: Orm; config: IdentityConfig }): App {
   });
   registerAccountReviewRoutes(app, { orm, serviceName: config.serviceName });
   registerProfessionalRoutes(app, { orm });
+  registerUserInternalRoutes(app, { orm });
+  registerAccountInternalRoutes(app, { orm });
   registerAdminUserRoutes(app, {
     orm,
     serviceName: config.serviceName,

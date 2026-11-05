@@ -31,8 +31,18 @@ export interface Place {
   isActive: boolean;
 }
 
+export interface Lookup {
+  group: string;
+  code: string;
+  label: string;
+  isActive: boolean;
+}
+
 interface Reference {
+  platform: { currency: string; locale: string };
   locations: Place[];
+  propertyTypes: { id: string; name: string; isActive: boolean }[];
+  lookups: Lookup[];
   notices: Partial<Record<string, Notice>>;
 }
 

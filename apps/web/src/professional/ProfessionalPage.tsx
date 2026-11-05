@@ -35,13 +35,16 @@ export function ProfessionalPage() {
   if (account.isError)
     return <p className="text-sm text-red-600">Your profile could not be loaded.</p>;
 
-  if (account.data === null && me.data?.registeredAs === 'staff') {
+  const side = me.data?.registeredAs;
+  if (account.data === null && side !== undefined && side !== 'professional') {
     return (
       <div className="flex flex-col gap-6">
         <PageHeader title="Professional profile" />
         <p className="max-w-2xl text-sm text-zinc-600">
-          Staff accounts can't have a professional profile, so no one reviews their own. To work as
-          an agent too, sign up here with a different mobile number.
+          {side === 'staff'
+            ? "Staff accounts can't have a professional profile, so no one reviews their own."
+            : `This number is registered as a ${side}, and one number stays on one side.`}{' '}
+          To work as an agent too, sign up here with a different mobile number.
         </p>
       </div>
     );

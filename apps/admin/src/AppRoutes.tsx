@@ -3,6 +3,8 @@ import { Route, Routes } from 'react-router';
 import { ContentPage } from './content/ContentPage';
 import { ProfessionalDetailPage } from './professionals/ProfessionalDetailPage';
 import { ProfessionalsPage } from './professionals/ProfessionalsPage';
+import { RequirementDetailPage } from './requirements/RequirementDetailPage';
+import { RequirementsPage } from './requirements/RequirementsPage';
 import { AuditLogPage } from './access/audit/AuditLogPage';
 import { RolesPage } from './access/roles/RolesPage';
 import { UserDetailPage } from './access/users/UserDetailPage';
@@ -36,6 +38,8 @@ export function AppRoutes() {
           <Route path={PATHS.auditLog} element={<AuditLogPage />} />
           <Route path={PATHS.professionals} element={<ProfessionalsPage />} />
           <Route path="/professionals/:id" element={<ProfessionalDetailPage />} />
+          <Route path={PATHS.requirements} element={<RequirementsPage />} />
+          <Route path="/requirements/:id" element={<RequirementDetailPage />} />
           <Route path={PATHS.content} element={<ContentPage />} />
         </Route>
       </Route>

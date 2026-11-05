@@ -17,6 +17,16 @@ export const ErrorBody = Type.Object({
   error: Type.Object({ code: Type.String(), message: Type.String() }),
 });
 
+const UUID = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+
+/**
+ * Query `?ids=a,b`: comma-separated UUIDs, at most 100, for `/internal/*` lookups. The pattern
+ * has no nested quantifiers (no backtracking risk).
+ */
+export const UuidListQuery = Type.Object({
+  ids: Type.String({ pattern: `^${UUID}(,${UUID}){0,99}$` }),
+});
+
 declare module 'fastify' {
   interface FastifyContextConfig {
     public?: boolean;

@@ -34,14 +34,25 @@ test('MyProfilePage, after editing the name and email, saves both', async () => 
   expect(saved).toEqual({ name: 'Asha K', email: 'asha@example.in' });
 });
 
-test('MyProfilePage, for a buyer, offers to create a professional profile', async () => {
-  signedIn([], 'buyer');
+test('MyProfilePage, for a professional sign-up without a profile yet, offers to create one', async () => {
+  signedIn([], 'professional');
 
   renderApp('/me');
 
   expect(
     await screen.findByRole('link', { name: 'Create a professional profile' }),
   ).toHaveAttribute('href', '/professional');
+});
+
+test('MyProfilePage, for a buyer, does not offer a professional profile (one side per number)', async () => {
+  signedIn(['requirement.create'], 'buyer');
+
+  renderApp('/me');
+
+  await screen.findByRole('heading', { name: 'My profile' });
+  expect(
+    screen.queryByRole('link', { name: 'Create a professional profile' }),
+  ).not.toBeInTheDocument();
 });
 
 test('MyProfilePage, for a staff user, does not offer a professional profile', async () => {

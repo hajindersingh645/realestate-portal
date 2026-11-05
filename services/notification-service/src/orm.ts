@@ -2,6 +2,7 @@ import { createOrm, type Orm } from '@hanu/service-kit';
 import { Migration20261103150000_init } from '../migrations/Migration20261103150000_init.js';
 import { Migration20261103160313_add_notification_schema } from '../migrations/Migration20261103160313_add_notification_schema.js';
 import { Migration20261105130000_account_decision_templates } from '../migrations/Migration20261105130000_account_decision_templates.js';
+import { Migration20261106110000_requirement_decision_templates } from '../migrations/Migration20261106110000_requirement_decision_templates.js';
 import { Notification } from './modules/delivery/index.js';
 import { Recipient } from './modules/recipients/index.js';
 import { Template } from './modules/templates/index.js';
@@ -14,6 +15,7 @@ export const MIGRATIONS = [
   Migration20261103150000_init,
   Migration20261103160313_add_notification_schema,
   Migration20261105130000_account_decision_templates,
+  Migration20261106110000_requirement_decision_templates,
 ];
 
 export async function createNotificationOrm(clientUrl: string, schema: string): Promise<Orm> {

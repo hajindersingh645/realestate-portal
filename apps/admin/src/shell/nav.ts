@@ -2,6 +2,7 @@ import type { PermissionKey } from '@hanu/contracts';
 import {
   BadgeCheck,
   Building2,
+  ClipboardList,
   FileText,
   History,
   ListChecks,
@@ -27,8 +28,20 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/** Every section of the admin. Later phases add groups here (Leads, Billing). */
+/** Every section of the admin. Later phases add groups here (Billing). */
 export const NAV: NavGroup[] = [
+  {
+    group: 'Leads',
+    items: [
+      {
+        label: 'Requirements',
+        description: 'Approve, reject and hide buyer requirements',
+        path: PATHS.requirements,
+        icon: ClipboardList,
+        permission: 'admin.lead.moderate',
+      },
+    ],
+  },
   {
     group: 'Professionals',
     items: [

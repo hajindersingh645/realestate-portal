@@ -47,8 +47,8 @@ Verified lead marketplace for real estate (Chandigarh Tricity). Microservices mo
 - Migrate all services: `pnpm migrate`
 - Seed master data: `pnpm seed` (safe to repeat)
 - Draft a migration from entity changes: `pnpm --filter <service> migration:create --name <what>`, then `pnpm format`, read it, and add the class to `MIGRATIONS` in `orm.ts`
-- Run all services: `pnpm dev` (gateway :3000, identity-service :3001, catalog-service :3002, notification-service :3006, admin panel http://localhost:5174, dashboard http://localhost:5175)
-- identity-service calls catalog directly at `CATALOG_INTERNAL_URL` (`/internal/locations`), never through the gateway
+- Run all services: `pnpm dev` (gateway :3000, identity-service :3001, catalog-service :3002, lead-service :3003, notification-service :3006, admin panel http://localhost:5174, dashboard http://localhost:5175)
+- identity-service calls catalog directly at `CATALOG_INTERNAL_URL` (`/internal/locations`), never through the gateway; lead-service calls identity at `IDENTITY_INTERNAL_URL` and catalog at `CATALOG_INTERNAL_URL`
 - In development the admin and the dashboard share the localhost refresh cookie: use a private window for one of them
 - Staff setup links are built from identity-service's `ADMIN_URL`; the admin copies the link from the panel and sends it by hand
 - Lint and format check: `pnpm lint` · fix formatting: `pnpm format`

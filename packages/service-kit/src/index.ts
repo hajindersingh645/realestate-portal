@@ -12,3 +12,4 @@ export * from './audit.js';
 export * from './ids.js';
 export * from './internal-http.js';
 export * from './cursor.js';
+export * from './settings.js';

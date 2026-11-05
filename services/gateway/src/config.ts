@@ -18,6 +18,7 @@ const ROUTE_ENV: { prefix: string; env: string; rewritePrefix?: string }[] = [
   { prefix: '/api/v1/accounts', env: 'IDENTITY_URL', rewritePrefix: '/accounts' },
   { prefix: '/api/v1/professionals', env: 'IDENTITY_URL', rewritePrefix: '/professionals' },
   { prefix: '/api/v1/admin/identity', env: 'IDENTITY_URL', rewritePrefix: '/admin/identity' },
+  { prefix: '/api/v1/lead', env: 'LEAD_URL', rewritePrefix: '/lead' },
 ];
 
 export function loadGatewayConfig(env: NodeJS.ProcessEnv = process.env): GatewayConfig {

@@ -149,3 +149,15 @@ test('ProfessionalPage, when suspended, shows the notice and no form', async () 
   expect(await screen.findByText(/suspended/)).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
 });
+
+test('ProfessionalPage, for a staff user, explains why there is no form', async () => {
+  signedIn(['admin.account.review'], 'staff');
+  server.use(http.get('/api/v1/accounts/me', NO_ACCOUNT));
+
+  renderApp('/professional');
+
+  expect(
+    await screen.findByText(/Staff accounts can't have a professional profile/),
+  ).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Send for review' })).not.toBeInTheDocument();
+});

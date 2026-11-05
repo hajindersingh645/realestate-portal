@@ -43,3 +43,14 @@ test('MyProfilePage, for a buyer, offers to create a professional profile', asyn
     await screen.findByRole('link', { name: 'Create a professional profile' }),
   ).toHaveAttribute('href', '/professional');
 });
+
+test('MyProfilePage, for a staff user, does not offer a professional profile', async () => {
+  signedIn(['admin.catalog.manage'], 'staff');
+
+  renderApp('/me');
+
+  await screen.findByRole('heading', { name: 'My profile' });
+  expect(
+    screen.queryByRole('link', { name: 'Create a professional profile' }),
+  ).not.toBeInTheDocument();
+});

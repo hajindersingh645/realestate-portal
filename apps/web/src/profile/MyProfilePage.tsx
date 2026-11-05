@@ -39,6 +39,8 @@ export function MyProfilePage() {
   }
   const isProfessional =
     me.data.registeredAs === 'professional' || perms.includes('profile.manage');
+  // Staff can't own a profile (a conflict with approving profiles); identity refuses it too.
+  const canBecomeProfessional = !isProfessional && me.data.registeredAs !== 'staff';
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -78,14 +80,14 @@ export function MyProfilePage() {
           ) : null}
         </div>
       </form>
-      {isProfessional ? null : (
+      {canBecomeProfessional ? (
         <p className="text-sm text-zinc-600">
           Are you an agent, consultant or agency?{' '}
           <Link className="font-medium text-accent hover:text-accent-hover" to={PATHS.professional}>
             Create a professional profile
           </Link>
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

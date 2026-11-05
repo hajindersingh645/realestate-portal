@@ -64,7 +64,7 @@ export function account(overrides: Partial<MyAccount> = {}): MyAccount {
 }
 
 /** Signs in with `perms` and answers `/users/me` and `/catalog/reference`. */
-export function signedIn(perms: string[], registeredAs: 'buyer' | 'professional') {
+export function signedIn(perms: string[], registeredAs: 'buyer' | 'professional' | 'staff') {
   useSession.getState().signIn({ accessToken: fakeToken(perms), user: TEST_USER });
   server.use(
     http.get('/api/v1/users/me', () =>

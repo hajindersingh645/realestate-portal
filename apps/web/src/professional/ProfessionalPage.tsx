@@ -1,6 +1,7 @@
 import { api, PageHeader } from '@hanu/web-kit';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
+import { useMe } from '../api';
 import { ACCOUNT_KEY, useMyAccount, type AccountBody, type MyAccount } from './account-api';
 import { ProfileForm } from './ProfileForm';
 import { StatusBanner } from './StatusBanner';
@@ -8,6 +9,7 @@ import { StatusBanner } from './StatusBanner';
 /** Create the profile, or see its status and edit it. Suspended and banned profiles are frozen. */
 export function ProfessionalPage() {
   const account = useMyAccount();
+  const me = useMe();
   const queryClient = useQueryClient();
   const store = (saved: MyAccount) => {
     queryClient.setQueryData(ACCOUNT_KEY, saved);
@@ -28,10 +30,22 @@ export function ProfessionalPage() {
     },
   });
 
-  if (account.isPending)
+  if (account.isPending || me.isPending)
     return <Loader2 aria-label="Loading" className="size-5 animate-spin text-zinc-400" />;
   if (account.isError)
     return <p className="text-sm text-red-600">Your profile could not be loaded.</p>;
+
+  if (account.data === null && me.data?.registeredAs === 'staff') {
+    return (
+      <div className="flex flex-col gap-6">
+        <PageHeader title="Professional profile" />
+        <p className="max-w-2xl text-sm text-zinc-600">
+          Staff accounts can't have a professional profile, so no one reviews their own. To work as
+          an agent too, sign up here with a different mobile number.
+        </p>
+      </div>
+    );
+  }
 
   if (account.data === null) {
     return (

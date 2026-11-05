@@ -3,6 +3,7 @@ import { sql, type Orm } from '@hanu/service-kit';
 import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest';
 import { createIdentityOrm } from '../../orm.js';
 import { OtpLimitError, requestOtp, verifyOtp } from './otp.service.js';
+import { syncPermissions } from '../../permissions-sync.js';
 
 const DB_URL =
   process.env.TEST_IDENTITY_DATABASE_URL ??
@@ -15,6 +16,7 @@ let orm: Orm;
 beforeAll(async () => {
   orm = await createIdentityOrm(DB_URL, 'identity');
   await orm.migrator.up();
+  await orm.em.fork().transactional((em) => syncPermissions(em));
 });
 
 beforeEach(async () => {

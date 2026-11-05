@@ -15,6 +15,7 @@ import { SelfChangeError } from './access-changed.js';
 import { effectivePermissions } from './effective-permissions.js';
 import { grantRole, removeOverride, revokeRole, setOverride } from './grants.service.js';
 import { createRole, deleteRole, updateRole } from './roles.service.js';
+import { syncPermissions } from '../../permissions-sync.js';
 
 const DB_URL =
   process.env.TEST_IDENTITY_DATABASE_URL ??
@@ -26,6 +27,7 @@ let admin: Actor;
 beforeAll(async () => {
   orm = await createIdentityOrm(DB_URL, 'identity');
   await orm.migrator.up();
+  await orm.em.fork().transactional((em) => syncPermissions(em));
 });
 
 beforeEach(async () => {

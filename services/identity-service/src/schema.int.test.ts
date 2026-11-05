@@ -88,10 +88,12 @@ test('the system roles, after migrating, are seeded with their starting permissi
   ]);
 });
 
-test('users, a staff user without email or password hash, is refused', async () => {
-  await expect(insertUser({ registeredAs: 'staff', email: 'a@b.in' })).rejects.toThrow(
-    /users_staff_credentials_check/,
-  );
+test('users, a staff user without an email, is refused', async () => {
+  await expect(insertUser({ registeredAs: 'staff' })).rejects.toThrow(/users_staff_email_check/);
+});
+
+test('users, a staff user with an email but no password yet (setup link pending), is allowed', async () => {
+  await expect(insertUser({ registeredAs: 'staff', email: 'a@b.in' })).resolves.toBeUndefined();
 });
 
 test('users, a second live user with the same phone, is refused', async () => {

@@ -158,6 +158,8 @@ export async function unlockRequirement(
     throw new ForbiddenError('Only an approved professional account can unlock a lead');
   }
   return await em.transactional(async (tx) => {
+    // Unlocks of one lead queue on its row, so a double click can't pass the check below twice.
+    await sql(tx, 'select 1 from requirements where id = ? for update', [id]);
     const [existing] = await sql<{ id: string }>(
       tx,
       'select id from lead_unlocks where requirement_id = ? and account_id = ?',

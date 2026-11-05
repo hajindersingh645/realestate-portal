@@ -101,6 +101,20 @@ test('unlock, on a double click by one account, keeps one unlock and counts it o
   expect(audits).toHaveLength(1);
 });
 
+test('unlock, on two simultaneous clicks by one account, answers both with the same unlock', async () => {
+  const id = await live();
+  const caller = pro();
+
+  const [a, b] = await Promise.all([unlock(caller, id), unlock(caller, id)]);
+
+  expect(a.unlockId).toBe(b.unlockId);
+  const [row] = await sql<{ c: number }>(
+    orm.em.fork(),
+    'select unlock_count as c from requirements',
+  );
+  expect(row?.c).toBe(1);
+});
+
 test('unlock, for a pending account or a caller without one, returns 403', async () => {
   const id = await live();
 

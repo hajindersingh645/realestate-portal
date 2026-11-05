@@ -11,4 +11,7 @@ export const PATHS = {
   user: (id: string): string => `/access/users/${id}`,
   roles: '/access/roles',
   auditLog: '/access/audit-log',
+  professionals: '/professionals',
+  professional: (id: string): string => `/professionals/${id}`,
+  content: '/content',
 } as const;

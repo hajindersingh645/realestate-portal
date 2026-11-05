@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest';
 import { createIdentityOrm } from './orm.js';
 import { syncPermissions } from './permissions-sync.js';
+import { PERMISSIONS } from '@hanu/contracts';
 
 const OWNER_URL =
   process.env.TEST_IDENTITY_DATABASE_URL ??
@@ -84,7 +85,8 @@ test('the system roles, after migrating, are seeded with their starting permissi
     ['agent', 9],
     ['buyer', 6],
     ['consultant', 9],
-    ['super_admin', 30],
+    // super_admin holds every key (the permission sync grants new ones).
+    ['super_admin', PERMISSIONS.length],
   ]);
 });
 

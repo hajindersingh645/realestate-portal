@@ -1,11 +1,9 @@
 import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw/http';
 import { expect, test } from 'vitest';
-import { useSession } from '../session/session-store';
+import { useSession } from '@hanu/web-kit';
 import { renderApp } from '../test/render';
-import { server } from '../test/server';
-import { fakeToken, TEST_USER } from '../test/tokens';
+import { fakeToken, http, HttpResponse, server, TEST_USER } from '@hanu/web-kit/testing';
 
 function signInWith(perms: string[]) {
   useSession.getState().signIn({ accessToken: fakeToken(perms), user: TEST_USER });

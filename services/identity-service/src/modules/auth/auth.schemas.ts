@@ -9,9 +9,12 @@ export const LoginBody = Type.Object(
   {
     phone: Type.String({ minLength: 10, maxLength: 20 }),
     code: Type.String({ pattern: '^[0-9]{6}$' }),
-    /** Required, with consent, the first time a number logs in. */
+    /** Required, with consent and noticeBlockId, the first time a number logs in. */
     name: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
     consent: Type.Optional(Type.Boolean()),
+    noticeBlockId: Type.Optional(Type.String({ format: 'uuid' })),
+    /** Staff are never created here: they come from the admin panel. */
+    registeredAs: Type.Optional(Type.Union([Type.Literal('buyer'), Type.Literal('professional')])),
   },
   { additionalProperties: false },
 );

@@ -13,8 +13,10 @@ export async function signAccessToken(
   key: KeyObject,
   userId: string,
   perms: readonly string[],
+  account?: { id: string; status: string },
 ): Promise<string> {
-  return await new SignJWT({ perms: [...perms] })
+  const claims = account === undefined ? {} : { acc: account.id, accSt: account.status };
+  return await new SignJWT({ perms: [...perms], ...claims })
     .setProtectedHeader({ alg: 'EdDSA' })
     .setSubject(userId)
     .setIssuedAt()

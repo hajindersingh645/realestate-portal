@@ -9,10 +9,13 @@ export default defineConfig({
         test: {
           name: 'services',
           include: ['packages/**/*.test.ts', 'services/**/*.test.ts'],
-          exclude: ['**/*.int.test.ts', '**/node_modules/**', '**/dist/**'],
+          // web-kit runs in its own jsdom project below.
+          exclude: ['**/*.int.test.ts', '**/node_modules/**', '**/dist/**', 'packages/web-kit/**'],
         },
       },
       'apps/admin/vitest.config.ts',
+      'apps/web/vitest.config.ts',
+      'packages/web-kit/vitest.config.ts',
     ],
   },
 });

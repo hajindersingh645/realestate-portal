@@ -19,6 +19,8 @@ const deps: AuthDeps = {
 };
 const client = { ip: '127.0.0.1', userAgent: 'vitest' };
 const PHONE = '98150 12345';
+/** Any id: identity stores the notice version the client showed; catalog owns the text. */
+const NOTICE = '7f1f7f0e-7d5c-4a3e-9b1e-2a8f5a1f6c01';
 
 let orm: Orm;
 
@@ -50,7 +52,7 @@ async function signUp(phone = PHONE) {
   const result = await login(
     orm.em.fork(),
     deps,
-    { phone, code, name: 'Asha', consent: true },
+    { phone, code, name: 'Asha', consent: true, noticeBlockId: NOTICE },
     client,
   );
   if (!result.ok) throw new Error('signup failed');
@@ -104,10 +106,69 @@ test('login, for a new number without consent, throws and leaves the code usable
   const retry = await login(
     orm.em.fork(),
     deps,
-    { phone: PHONE, code, name: 'Asha', consent: true },
+    { phone: PHONE, code, name: 'Asha', consent: true, noticeBlockId: NOTICE },
     client,
   );
   expect(retry.ok).toBe(true);
+});
+
+test('login, for a new number as a professional, stores the side and the notice version and grants no role', async () => {
+  const code = await sendCode();
+
+  const result = await login(
+    orm.em.fork(),
+    deps,
+    {
+      phone: PHONE,
+      code,
+      name: 'Ravi',
+      consent: true,
+      noticeBlockId: NOTICE,
+      registeredAs: 'professional',
+    },
+    client,
+  );
+
+  expect(result.ok).toBe(true);
+  const [user] = await sql<{ registered_as: string; notice_block_id: string; consented: boolean }>(
+    orm.em.fork(),
+    'select registered_as, notice_block_id, consented_at is not null as consented from users',
+  );
+  expect(user).toEqual({ registered_as: 'professional', notice_block_id: NOTICE, consented: true });
+  expect(await sql(orm.em.fork(), 'select 1 from user_roles')).toHaveLength(0);
+});
+
+test('login, for a new number with consent but no notice version, throws SignupDetailsRequiredError', async () => {
+  const code = await sendCode();
+
+  await expect(
+    login(orm.em.fork(), deps, { phone: PHONE, code, name: 'Asha', consent: true }, client),
+  ).rejects.toBeInstanceOf(SignupDetailsRequiredError);
+
+  expect(await sql(orm.em.fork(), 'select id from users')).toHaveLength(0);
+});
+
+test('login, for a known number, ignores registeredAs and noticeBlockId', async () => {
+  await signUp();
+  const code = await sendCode();
+
+  await login(
+    orm.em.fork(),
+    deps,
+    {
+      phone: PHONE,
+      code,
+      registeredAs: 'professional',
+      noticeBlockId: '7f1f7f0e-7d5c-4a3e-9b1e-2a8f5a1f6c99',
+    },
+    client,
+  );
+
+  const [user] = await sql<{ registered_as: string; notice_block_id: string }>(
+    orm.em.fork(),
+    'select registered_as, notice_block_id from users',
+  );
+  expect(user).toEqual({ registered_as: 'buyer', notice_block_id: NOTICE });
 });
 
 test('login, with a wrong code, returns ok false and creates no user', async () => {

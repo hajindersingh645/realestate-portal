@@ -21,5 +21,6 @@
     "*.config.ts",
     "vitest.swc.ts",
     "vitest.int.global-setup.ts"
-  ]
+  ],
+  "exclude": ["packages/web-kit"]
 }

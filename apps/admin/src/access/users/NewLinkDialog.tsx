@@ -1,6 +1,4 @@
-import { Button } from '../../ui/Button';
-import { Dialog } from '../../ui/Dialog';
-import { FormError } from '../../ui/FormError';
+import { Button, Dialog, FormError } from '@hanu/web-kit';
 import { useIdentityWrite, type SetupLink } from '../access-api';
 import { SetupLinkPanel } from './SetupLinkPanel';
 

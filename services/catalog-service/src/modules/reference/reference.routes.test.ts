@@ -42,6 +42,7 @@ test('GET /reference, without a token, returns the reference data', async () => 
       },
     ],
     unitConversions: [],
+    notices: {},
   };
   vi.mocked(service.getReference).mockResolvedValue(data);
 
@@ -65,4 +66,25 @@ test('GET /reference, when the service returns a field the schema does not decla
   const res = await buildApp({ orm, config }).inject({ method: 'GET', url: '/reference' });
 
   expect(res.body).not.toContain('internalNote');
+});
+
+test('GET /reference, with a current consent notice, includes it under notices', async () => {
+  const notice = {
+    id: '7f1f7f0e-7d5c-4a3e-9b1e-2a8f5a1f6c01',
+    version: 1,
+    body: 'We store your phone number…',
+    links: [{ label: 'Terms', url: '/terms' }],
+  };
+  vi.mocked(service.getReference).mockResolvedValue({
+    platform,
+    locations: [],
+    propertyTypes: [],
+    lookups: [],
+    unitConversions: [],
+    notices: { 'signup.data_notice': notice },
+  });
+
+  const res = await buildApp({ orm, config }).inject({ method: 'GET', url: '/reference' });
+
+  expect(res.json()).toMatchObject({ notices: { 'signup.data_notice': notice } });
 });

@@ -1,9 +1,8 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw/http';
 import { expect, test } from 'vitest';
 import { renderApp } from '../test/render';
-import { server } from '../test/server';
+import { http, HttpResponse, server } from '@hanu/web-kit/testing';
 
 async function submit(password: string, confirm: string) {
   const user = userEvent.setup();

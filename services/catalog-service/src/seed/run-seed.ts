@@ -8,6 +8,7 @@ export interface SeedResult {
   propertyTypes: number;
   lookups: number;
   unitConversions: number;
+  contentBlocks: number;
 }
 
 interface IdRow {
@@ -51,8 +52,14 @@ async function location(em: Em, row: SeedLocationRow): Promise<{ id: string; ins
  * soft-deleted is never brought back (unique rules include deleted rows; conversions are
  * checked explicitly because their unique rule does not).
  */
-export async function runSeed(em: Em, producer: string): Promise<SeedResult> {
-  const result: SeedResult = { locations: 0, propertyTypes: 0, lookups: 0, unitConversions: 0 };
+export async function runSeed(em: Em, producer: string, locale: string): Promise<SeedResult> {
+  const result: SeedResult = {
+    locations: 0,
+    propertyTypes: 0,
+    lookups: 0,
+    unitConversions: 0,
+    contentBlocks: 0,
+  };
 
   for (const [stateIndex, state] of TRICITY_SEED.states.entries()) {
     const savedState = await location(em, {
@@ -134,7 +141,31 @@ export async function runSeed(em: Em, producer: string): Promise<SeedResult> {
     result.unitConversions += inserted.length;
   }
 
-  const total = result.locations + result.propertyTypes + result.lookups + result.unitConversions;
+  // Placeholder notice so sign-up works on a new deployment; staff replace it in the admin panel.
+  // Only when the key has no version yet in this locale.
+  const notice = await sql<IdRow>(
+    em,
+    `insert into content_blocks (id, key, locale, version, body, links, created_at)
+     select ?, 'signup.data_notice', ?, 1, ?, ?::jsonb, now()
+      where not exists (
+        select 1 from content_blocks where key = 'signup.data_notice' and locale = ?)
+     returning id`,
+    [
+      randomUUID(),
+      locale,
+      TRICITY_SEED.dataNotice.body,
+      JSON.stringify(TRICITY_SEED.dataNotice.links),
+      locale,
+    ],
+  );
+  result.contentBlocks += notice.length;
+
+  const total =
+    result.locations +
+    result.propertyTypes +
+    result.lookups +
+    result.unitConversions +
+    result.contentBlocks;
   // One event for the whole load: consumers reload everything on any reference.changed.
   // Audited once, with no user: the seed is run from the command line.
   const actor = { service: producer, userId: null, ip: null };

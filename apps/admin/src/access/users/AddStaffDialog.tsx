@@ -1,10 +1,5 @@
 import { useState } from 'react';
-import { ApiError } from '../../api/errors';
-import { Button } from '../../ui/Button';
-import { FormDialog } from '../../ui/FormDialog';
-import { Dialog } from '../../ui/Dialog';
-import { TextField } from '../../ui/TextField';
-import { textOf } from '../../ui/form-values';
+import { ApiError, Button, Dialog, FormDialog, TextField, textOf } from '@hanu/web-kit';
 import { useIdentityWrite, useRoles, type SetupLink } from '../access-api';
 import { SetupLinkPanel } from './SetupLinkPanel';
 

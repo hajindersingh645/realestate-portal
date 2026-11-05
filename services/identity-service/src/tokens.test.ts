@@ -28,6 +28,31 @@ test('signAccessToken, for any user, expires 10 minutes after it is issued', asy
   expect((claims.exp ?? 0) - (claims.iat ?? 0)).toBe(600);
 });
 
+test('signAccessToken, for a member of an account, adds acc and accSt, and the kit reads the account id', async () => {
+  const app = createApp({ serviceName: 'test', logLevel: 'silent' });
+  registerAuth(app, { publicKeyPem: keys.publicKeyPem });
+  app.get('/probe', { config: { authenticated: true } }, (request) => request.auth ?? {});
+  const token = await signAccessToken(keys.privateKey, 'user-1', ['profile.manage'], {
+    id: 'acc-1',
+    status: 'pending',
+  });
+
+  const response = await app.inject({
+    url: '/probe',
+    headers: { authorization: `Bearer ${token}` },
+  });
+
+  expect(response.json()).toMatchObject({ userId: 'user-1', accountId: 'acc-1' });
+  expect(decodeJwt(token)).toMatchObject({ acc: 'acc-1', accSt: 'pending' });
+});
+
+test('signAccessToken, without an account, has no acc or accSt claim', async () => {
+  const claims = decodeJwt(await signAccessToken(keys.privateKey, 'user-1', []));
+
+  expect(claims).not.toHaveProperty('acc');
+  expect(claims).not.toHaveProperty('accSt');
+});
+
 test('newRefreshToken, parsed back, gives the session id and the stored hash', () => {
   const sessionId = randomUUID();
   const { token, hash } = newRefreshToken(sessionId);

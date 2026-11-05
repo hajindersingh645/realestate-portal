@@ -1,4 +1,5 @@
 import { Type } from 'typebox';
+import { NoticeView } from '../content-blocks/index.js';
 import { LocationViewSchema } from '../locations/index.js';
 import { LookupViewSchema } from '../lookups/index.js';
 import { PropertyTypeViewSchema } from '../property-types/index.js';
@@ -16,4 +17,6 @@ export const ReferenceResponse = Type.Object({
   propertyTypes: Type.Array(PropertyTypeViewSchema),
   lookups: Type.Array(LookupViewSchema),
   unitConversions: Type.Array(UnitConversionViewSchema),
+  /** Current texts by key (e.g. `signup.data_notice`), in the platform locale. */
+  notices: Type.Record(Type.String(), NoticeView),
 });

@@ -1,10 +1,12 @@
 import {
   EXCHANGES,
   ROUTING_KEYS,
+  type AccountDecisionPayload,
   type OtpRequestedPayload,
   type UserContactPayload,
 } from '@hanu/contracts';
 import { subscribe, type Orm, type RabbitConnection } from '@hanu/service-kit';
+import { handleAccountDecided } from './consumers/account-decided.js';
 import { handleOtpRequested } from './consumers/otp-requested.js';
 import { upsertRecipient } from './consumers/user-contact.js';
 import type { SmsProvider } from './providers/sms-provider.js';
@@ -14,6 +16,8 @@ export async function startMessaging(deps: {
   orm: Orm;
   connection: RabbitConnection;
   sms: SmsProvider;
+  /** `PLATFORM_LOCALE`: which template rows to use. */
+  locale: string;
   onError?: (error: unknown) => void;
 }) {
   const common = {
@@ -37,6 +41,18 @@ export async function startMessaging(deps: {
       keys: [ROUTING_KEYS.userRegistered, ROUTING_KEYS.userContactChanged],
       handler: async (envelope, em) => {
         await upsertRecipient(em, envelope);
+      },
+    }),
+    await subscribe<AccountDecisionPayload>({
+      ...common,
+      queue: 'notification-service.account.decided',
+      keys: [
+        ROUTING_KEYS.accountApproved,
+        ROUTING_KEYS.accountRejected,
+        ROUTING_KEYS.accountSuspended,
+      ],
+      handler: async (envelope, em) => {
+        await handleAccountDecided(em, deps.sms, deps.locale, envelope);
       },
     }),
   ];

@@ -10,6 +10,10 @@ export const ROUTING_KEYS = {
   userRegistered: 'user.registered',
   userContactChanged: 'user.contact.changed',
   userAccessChanged: 'user.access.changed',
+  accountApproved: 'account.approved',
+  accountRejected: 'account.rejected',
+  /** Also sent on a ban, with `status: 'banned'`. */
+  accountSuspended: 'account.suspended',
   /** Published on each producing service's own exchange. */
   auditRecorded: 'audit.recorded',
 } as const;
@@ -38,6 +42,7 @@ export const REFERENCE_ENTITIES = [
   'property_type',
   'lookup',
   'unit_conversion',
+  'content_block',
 ] as const;
 export type ReferenceEntity = (typeof REFERENCE_ENTITIES)[number];
 

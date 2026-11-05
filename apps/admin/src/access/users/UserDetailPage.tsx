@@ -2,11 +2,7 @@ import { ArrowLeft, History, KeyRound, Plus, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { PATHS } from '../../paths';
-import { useCan } from '../../session/useCan';
-import { Button } from '../../ui/Button';
-import { ConfirmDialog } from '../../ui/ConfirmDialog';
-import { FormError } from '../../ui/FormError';
-import { StatusBadge } from '../../ui/StatusBadge';
+import { Button, ConfirmDialog, FormError, StatusBadge, useCan } from '@hanu/web-kit';
 import {
   ACCESS_ERRORS,
   formatDateTime,

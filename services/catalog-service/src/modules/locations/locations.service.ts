@@ -197,3 +197,30 @@ export async function deleteLocation(em: Em, id: string, actor: Actor): Promise<
     await emitReferenceChanged(tx, actor, 'location', id, { action: 'deleted' });
   });
 }
+
+/** What another service needs to check a location id: its type, whether it is live, and its city. */
+export interface InternalLocationView {
+  id: string;
+  type: string;
+  /** The city itself for a city, the parent city for a locality, null for a state. */
+  cityId: string | null;
+  isActive: boolean;
+}
+
+/** Unknown and soft-deleted ids are left out; the caller compares lengths. */
+export async function lookupLocations(
+  em: Em,
+  ids: readonly string[],
+): Promise<InternalLocationView[]> {
+  if (ids.length === 0) return [];
+  const rows = await sql<{ id: string; type: string; city_id: string | null; is_active: boolean }>(
+    em,
+    `select id, type, is_active,
+            case type when 'city' then id when 'locality' then parent_id end as city_id
+       from locations
+      where deleted_at is null and id in (${ids.map(() => '?').join(', ')})
+      order by id`,
+    [...ids],
+  );
+  return rows.map((r) => ({ id: r.id, type: r.type, cityId: r.city_id, isActive: r.is_active }));
+}

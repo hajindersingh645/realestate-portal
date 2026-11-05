@@ -1,13 +1,8 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { ChevronRight } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router';
-import { api } from '../../api/client';
+import { api, Button, EmptyState, FormError, PageHeader, useCan } from '@hanu/web-kit';
 import { PATHS } from '../../paths';
-import { useCan } from '../../session/useCan';
-import { Button } from '../../ui/Button';
-import { EmptyState } from '../../ui/EmptyState';
-import { FormError } from '../../ui/FormError';
-import { PageHeader } from '../../ui/PageHeader';
 import { formatDateTime, IDENTITY } from '../access-api';
 import { DiffView } from './DiffView';
 

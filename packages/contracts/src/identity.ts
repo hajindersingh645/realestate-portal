@@ -30,3 +30,21 @@ export interface UserAccessChangedPayload {
   userId: string;
   changedAt: string; // ISO-8601
 }
+
+export const ACCOUNT_TYPES = ['agent', 'consultant', 'agency'] as const;
+export type AccountType = (typeof ACCOUNT_TYPES)[number];
+
+export const ACCOUNT_STATUSES = ['pending', 'approved', 'rejected', 'suspended', 'banned'] as const;
+export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
+
+/** A staff decision on a professional account. `reason` is null only for an approval. */
+export interface AccountDecisionPayload {
+  accountId: string;
+  ownerUserId: string;
+  status: AccountStatus;
+  reason: string | null;
+}
+
+/** What staff can do to a professional account. Every action but `approve` needs a reason. */
+export const ACCOUNT_DECISIONS = ['approve', 'reject', 'suspend', 'ban', 'reactivate'] as const;
+export type AccountDecision = (typeof ACCOUNT_DECISIONS)[number];

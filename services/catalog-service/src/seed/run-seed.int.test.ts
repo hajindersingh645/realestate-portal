@@ -27,7 +27,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await sql(
     orm.em.fork(),
-    'truncate unit_conversions, locations, lookups, property_types, outbox_events cascade',
+    'truncate unit_conversions, locations, lookups, property_types, content_blocks, outbox_events cascade',
   );
 });
 
@@ -45,10 +45,11 @@ const expected = {
   propertyTypes: TRICITY_SEED.propertyTypes.length,
   lookups: TRICITY_SEED.lookups.length,
   unitConversions: TRICITY_SEED.unitConversions.length,
+  contentBlocks: 1,
 };
 
 async function seed(): Promise<Awaited<ReturnType<typeof runSeed>>> {
-  return await orm.em.fork().transactional((em) => runSeed(em, P));
+  return await orm.em.fork().transactional((em) => runSeed(em, P, platform.locale));
 }
 
 test('runSeed, on an empty catalog, inserts everything and one reference.changed event', async () => {
@@ -58,6 +59,7 @@ test('runSeed, on an empty catalog, inserts everything and one reference.changed
   const reference = await getReference(orm.em.fork(), platform);
   expect(reference.locations.filter((location) => location.type === 'city')).toHaveLength(6);
   expect(reference.locations.filter((location) => location.type === 'state')).toHaveLength(3);
+  expect(reference.notices['signup.data_notice']?.version).toBe(1);
   expect(
     await sql(
       orm.em.fork(),
@@ -72,7 +74,13 @@ test('runSeed, run a second time, inserts nothing and emits nothing', async () =
 
   const second = await seed();
 
-  expect(second).toEqual({ locations: 0, propertyTypes: 0, lookups: 0, unitConversions: 0 });
+  expect(second).toEqual({
+    locations: 0,
+    propertyTypes: 0,
+    lookups: 0,
+    unitConversions: 0,
+    contentBlocks: 0,
+  });
   expect(
     await sql(
       orm.em.fork(),
@@ -111,7 +119,13 @@ test('runSeed, after an admin deleted a seeded lookup and conversion, does not b
 
   const again = await seed();
 
-  expect(again).toEqual({ locations: 0, propertyTypes: 0, lookups: 0, unitConversions: 0 });
+  expect(again).toEqual({
+    locations: 0,
+    propertyTypes: 0,
+    lookups: 0,
+    unitConversions: 0,
+    contentBlocks: 0,
+  });
   const reference = await getReference(orm.em.fork(), platform);
   expect(reference.lookups.some((lookup) => lookup.code === 'gym')).toBe(false);
   expect(reference.unitConversions).toHaveLength(TRICITY_SEED.unitConversions.length - 1);

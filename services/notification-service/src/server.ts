@@ -22,6 +22,7 @@ await assertExchanges(connection, [EXCHANGES.identity]);
 const messaging = await startMessaging({
   orm,
   connection,
+  locale: config.platform.locale,
   sms: new ConsoleSmsProvider(config.nodeEnv, (line) => {
     app.log.info(line);
   }),

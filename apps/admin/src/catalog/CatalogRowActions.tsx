@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
-import { RowMenu, type RowMenuItem } from '../ui/RowMenu';
+import { ConfirmDialog, RowMenu, type RowMenuItem } from '@hanu/web-kit';
 import { useCatalogWrite, type CatalogResource } from './catalog-api';
 
 export interface CatalogRowActionsProps {

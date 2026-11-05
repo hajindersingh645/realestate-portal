@@ -26,6 +26,12 @@ test('loadGatewayConfig, when every variable is set, returns routes and trimmed 
       rateLimitMax: 10,
     },
     { prefix: '/api/v1/users', upstream: 'http://localhost:3001', rewritePrefix: '/users' },
+    { prefix: '/api/v1/accounts', upstream: 'http://localhost:3001', rewritePrefix: '/accounts' },
+    {
+      prefix: '/api/v1/professionals',
+      upstream: 'http://localhost:3001',
+      rewritePrefix: '/professionals',
+    },
     {
       prefix: '/api/v1/admin/identity',
       upstream: 'http://localhost:3001',

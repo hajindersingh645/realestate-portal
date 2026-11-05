@@ -1,8 +1,5 @@
 import type { LocationType } from '@hanu/contracts';
-import { FormDialog } from '../../ui/FormDialog';
-import { Select } from '../../ui/Select';
-import { TextField } from '../../ui/TextField';
-import { textOf } from '../../ui/form-values';
+import { FormDialog, Select, TextField, textOf } from '@hanu/web-kit';
 import { fieldErrors, formLevelError, useCatalogWrite } from '../catalog-api';
 import { TYPE_LABELS, type Location } from './types';
 

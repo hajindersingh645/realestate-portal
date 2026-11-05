@@ -195,4 +195,12 @@ export const TRICITY_SEED = {
     { unit: 'marla', factor: 225 },
     { unit: 'kanal', factor: 4500 },
   ] satisfies SeedConversion[],
+  /** Placeholder until the owner writes the real text (Admin → Content). */
+  dataNotice: {
+    body: 'We use your name and phone number to create your account, verify you and show your details to the people you choose to deal with on Hanu.property. Read how we handle your data before you continue.',
+    links: [
+      { label: 'Privacy Policy', url: '/privacy' },
+      { label: 'Terms', url: '/terms' },
+    ],
+  },
 };

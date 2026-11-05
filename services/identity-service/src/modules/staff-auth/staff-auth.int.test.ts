@@ -91,14 +91,15 @@ test('createSuperAdmin, with a password under 12 characters, throws and creates 
 test('startStaffLogin, with a wrong password or an unknown email, throws the same error and sends no code', async () => {
   await createSuperAdmin(orm.em.fork(), deps, ADMIN);
 
+  // Each awaited where it starts: a second pending rejection would be reported as unhandled.
   const wrong = startStaffLogin(orm.em.fork(), deps, { email: ADMIN.email, password: 'nope' });
+  await expect(wrong).rejects.toBeInstanceOf(InvalidCredentialsError);
   const unknown = startStaffLogin(orm.em.fork(), deps, {
     email: 'who@hanu.property',
     password: 'nope',
   });
-
-  await expect(wrong).rejects.toBeInstanceOf(InvalidCredentialsError);
   await expect(unknown).rejects.toBeInstanceOf(InvalidCredentialsError);
+
   expect(await lastOtp()).toBeUndefined();
 });
 

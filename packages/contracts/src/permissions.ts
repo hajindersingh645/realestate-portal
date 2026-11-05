@@ -31,6 +31,7 @@ export const PERMISSIONS = [
   'admin.notification.manage',
   'admin.handshake.resolve',
   'admin.audit.view',
+  'admin.account.review',
 ] as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[number];

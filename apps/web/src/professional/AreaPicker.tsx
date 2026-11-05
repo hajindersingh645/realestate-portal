@@ -3,13 +3,14 @@ import { useReference, type Place } from '../api';
 export interface AreaPickerProps {
   /** Location ids already chosen (city or locality). */
   selected: readonly string[];
+  legend?: string;
 }
 
 /**
  * Checkboxes named `locationIds`: one per city ("All of Mohali") and one per locality, grouped by
  * city. The form reads them with `getAll`, so no state lives here.
  */
-export function AreaPicker({ selected }: AreaPickerProps) {
+export function AreaPicker({ selected, legend = 'Areas you serve' }: AreaPickerProps) {
   const reference = useReference();
   const places = (reference.data?.locations ?? []).filter((p) => p.isActive);
   const cities = places.filter((p) => p.type === 'city');
@@ -20,7 +21,7 @@ export function AreaPicker({ selected }: AreaPickerProps) {
   if (reference.isPending) return <p className="text-sm text-zinc-500">Loading areas…</p>;
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-1 text-sm font-medium text-zinc-700">Areas you serve</legend>
+      <legend className="mb-1 text-sm font-medium text-zinc-700">{legend}</legend>
       {cities.map((city) => {
         const localities = localitiesOf(city);
         const open = chosen.has(city.id) || localities.some((l) => chosen.has(l.id));

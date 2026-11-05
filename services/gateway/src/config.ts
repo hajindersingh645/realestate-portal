@@ -16,6 +16,7 @@ const ROUTE_ENV: { prefix: string; env: string; rewritePrefix?: string }[] = [
   { prefix: '/api/v1/auth', env: 'IDENTITY_URL', rewritePrefix: '/auth' },
   { prefix: '/api/v1/users', env: 'IDENTITY_URL', rewritePrefix: '/users' },
   { prefix: '/api/v1/accounts', env: 'IDENTITY_URL', rewritePrefix: '/accounts' },
+  { prefix: '/api/v1/professionals', env: 'IDENTITY_URL', rewritePrefix: '/professionals' },
   { prefix: '/api/v1/admin/identity', env: 'IDENTITY_URL', rewritePrefix: '/admin/identity' },
 ];
 

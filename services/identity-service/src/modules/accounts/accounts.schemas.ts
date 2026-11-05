@@ -1,10 +1,12 @@
 import {
+  ACCOUNT_DECISIONS,
   ACCOUNT_STATUSES,
   ACCOUNT_TYPES,
+  type AccountDecision,
   type AccountStatus,
   type AccountType,
 } from '@hanu/contracts';
-import { Type } from 'typebox';
+import { Type, type TSchema } from 'typebox';
 
 const Uuid = Type.String({ format: 'uuid' });
 // `enum` keeps the literal types (a Union built with `.map` is typed `never`).
@@ -72,4 +74,94 @@ export const MyAccountView = Type.Object({
   areas: Type.Array(Type.Object({ locationId: Type.String(), cityId: Type.String() })),
   rejectReason: Type.Union([Type.String(), Type.Null()]),
   license: Type.Object({ label: Type.String(), mandatory: Type.Boolean() }),
+});
+
+const Nullable = <T extends TSchema>(schema: T) => Type.Union([schema, Type.Null()]);
+const Areas = Type.Array(Type.Object({ locationId: Type.String(), cityId: Type.String() }));
+const Cursor = Type.String({ minLength: 1, maxLength: 200 });
+
+export const DecisionBody = Type.Object(
+  {
+    action: Type.Unsafe<AccountDecision>(Type.String({ enum: [...ACCOUNT_DECISIONS] })),
+    reason: Type.Optional(Type.String({ maxLength: 500 })),
+  },
+  { additionalProperties: false },
+);
+
+export const AccountIdParams = Type.Object({ id: Uuid });
+
+export const StaffAccountQuery = Type.Object({
+  status: Type.Optional(AccountStatusSchema),
+  type: Type.Optional(AccountTypeSchema),
+  q: Type.Optional(Type.String({ maxLength: 80 })),
+  cursor: Type.Optional(Cursor),
+});
+
+const Owner = { userId: Type.String(), name: Type.String(), phone: Type.String() };
+
+export const StaffAccountList = Type.Object({
+  data: Type.Array(
+    Type.Object({
+      id: Type.String(),
+      type: AccountTypeSchema,
+      displayName: Type.String(),
+      slug: Type.String(),
+      status: AccountStatusSchema,
+      createdAt: Type.String(),
+      owner: Type.Object(Owner),
+    }),
+  ),
+  nextCursor: Nullable(Type.String()),
+});
+
+export const StaffAccountView = Type.Object({
+  id: Type.String(),
+  type: AccountTypeSchema,
+  displayName: Type.String(),
+  slug: Type.String(),
+  about: Nullable(Type.String()),
+  experienceYears: Nullable(Type.Integer()),
+  specialisations: Type.Array(Type.String()),
+  licenseNumber: Nullable(Type.String()),
+  status: AccountStatusSchema,
+  createdAt: Type.String(),
+  owner: Type.Object({ ...Owner, email: Nullable(Type.String()) }),
+  areas: Areas,
+  transitions: Type.Array(
+    Type.Object({
+      fromStatus: Nullable(AccountStatusSchema),
+      toStatus: AccountStatusSchema,
+      reason: Nullable(Type.String()),
+      actorUserId: Nullable(Type.String()),
+      actorName: Nullable(Type.String()),
+      createdAt: Type.String(),
+    }),
+  ),
+});
+
+export const ProfessionalQuery = Type.Object({
+  cityId: Type.Optional(Uuid),
+  locationId: Type.Optional(Uuid),
+  type: Type.Optional(AccountTypeSchema),
+  cursor: Type.Optional(Cursor),
+});
+
+export const SlugParams = Type.Object({ slug: Type.String({ minLength: 1, maxLength: 60 }) });
+
+/** The public profile: no owner name, phone or email. */
+export const PublicProfessional = Type.Object({
+  id: Type.String(),
+  slug: Type.String(),
+  type: AccountTypeSchema,
+  displayName: Type.String(),
+  about: Nullable(Type.String()),
+  experienceYears: Nullable(Type.Integer()),
+  specialisations: Type.Array(Type.String()),
+  licenseNumber: Nullable(Type.String()),
+  areas: Areas,
+});
+
+export const ProfessionalList = Type.Object({
+  data: Type.Array(PublicProfessional),
+  nextCursor: Nullable(Type.String()),
 });

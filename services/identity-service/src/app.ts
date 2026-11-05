@@ -2,7 +2,11 @@ import cookie from '@fastify/cookie';
 import { createApp, registerAuth, sql, type App, type Orm } from '@hanu/service-kit';
 import type { IdentityConfig } from './load-config.js';
 import { registerAccessRoutes } from './modules/access/index.js';
-import { registerAccountRoutes } from './modules/accounts/index.js';
+import {
+  registerAccountReviewRoutes,
+  registerAccountRoutes,
+  registerProfessionalRoutes,
+} from './modules/accounts/index.js';
 import { registerAuditLogRoutes } from './modules/audit-logs/index.js';
 import { registerAuthRoutes } from './modules/auth/index.js';
 import { registerStaffAuthRoutes } from './modules/staff-auth/index.js';
@@ -48,6 +52,8 @@ export function buildApp(deps: { orm: Orm; config: IdentityConfig }): App {
     serviceName: config.serviceName,
     accounts: { catalogUrl: config.catalogInternalUrl },
   });
+  registerAccountReviewRoutes(app, { orm, serviceName: config.serviceName });
+  registerProfessionalRoutes(app, { orm });
   registerAdminUserRoutes(app, {
     orm,
     serviceName: config.serviceName,

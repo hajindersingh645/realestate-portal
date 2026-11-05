@@ -1,5 +1,5 @@
 import type { AuditRecordedPayload, EventEnvelope } from '@hanu/contracts';
-import { sql, uuidv7, ValidationError, type Em } from '@hanu/service-kit';
+import { decodeCursor, encodeCursor, sql, uuidv7, type Em } from '@hanu/service-kit';
 
 /** Stores one `audit.recorded` event. Safe to run twice: `event_id` is unique. */
 export async function recordAudit(
@@ -49,14 +49,6 @@ export interface AuditFilter {
 
 const PAGE = 50;
 
-function decodeCursor(cursor: string): [string, string] {
-  const [createdAt, id] = Buffer.from(cursor, 'base64url').toString().split('|');
-  if (createdAt === undefined || id === undefined || Number.isNaN(Date.parse(createdAt))) {
-    throw new ValidationError('Invalid cursor');
-  }
-  return [createdAt, id];
-}
-
 /** Newest first, 50 per page, keyset paging on (created_at, id). */
 export async function listAuditLogs(
   em: Em,
@@ -91,8 +83,6 @@ export async function listAuditLogs(
   const page = rows.slice(0, PAGE);
   const last = page.at(-1);
   const nextCursor =
-    rows.length > PAGE && last !== undefined
-      ? Buffer.from(`${last.createdAt}|${last.id}`).toString('base64url')
-      : null;
+    rows.length > PAGE && last !== undefined ? encodeCursor(last.createdAt, last.id) : null;
   return { data: page, nextCursor };
 }

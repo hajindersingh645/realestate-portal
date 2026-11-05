@@ -44,3 +44,7 @@ export interface AccountDecisionPayload {
   status: AccountStatus;
   reason: string | null;
 }
+
+/** What staff can do to a professional account. Every action but `approve` needs a reason. */
+export const ACCOUNT_DECISIONS = ['approve', 'reject', 'suspend', 'ban', 'reactivate'] as const;
+export type AccountDecision = (typeof ACCOUNT_DECISIONS)[number];

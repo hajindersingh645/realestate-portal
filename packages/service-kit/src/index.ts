@@ -11,3 +11,4 @@ export * from './db-errors.js';
 export * from './audit.js';
 export * from './ids.js';
 export * from './internal-http.js';
+export * from './cursor.js';

@@ -14,6 +14,7 @@ export default defineConfig({
         },
       },
       'apps/admin/vitest.config.ts',
+      'apps/web/vitest.config.ts',
       'packages/web-kit/vitest.config.ts',
     ],
   },

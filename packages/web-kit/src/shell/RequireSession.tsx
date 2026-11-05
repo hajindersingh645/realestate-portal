@@ -1,10 +1,14 @@
 import { Loader2 } from 'lucide-react';
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { PATHS } from '../paths';
-import { useSession } from '@hanu/web-kit';
+import { useSession } from '../session/session-store';
 
-/** Guards every staff page: waits for the first refresh, then lets a signed-in user through. */
-export function RequireSession() {
+export interface RequireSessionProps {
+  /** The sign-in page; the current path is passed as `?next=`. */
+  signInPath: string;
+}
+
+/** Guards signed-in pages: waits for the first refresh, then lets a signed-in user through. */
+export function RequireSession({ signInPath }: RequireSessionProps) {
   const status = useSession((s) => s.status);
   const location = useLocation();
   if (status === 'unknown') {
@@ -20,7 +24,7 @@ export function RequireSession() {
   }
   if (status === 'signed-out') {
     const next = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`${PATHS.login}?next=${next}`} replace />;
+    return <Navigate to={`${signInPath}?next=${next}`} replace />;
   }
   return <Outlet />;
 }

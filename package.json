@@ -10,7 +10,7 @@
     "prepare": "git config core.hooksPath .githooks",
     "lint": "eslint . --no-error-on-unmatched-pattern && prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p packages/web-kit && tsc --noEmit -p apps/admin",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p packages/web-kit && tsc --noEmit -p apps/admin && tsc --noEmit -p apps/web",
     "build": "pnpm typecheck",
     "test": "vitest run --passWithNoTests",
     "test:int": "vitest run --config vitest.int.config.ts --passWithNoTests",

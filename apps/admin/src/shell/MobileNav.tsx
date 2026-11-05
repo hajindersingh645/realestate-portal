@@ -1,9 +1,8 @@
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
-import { Dialog } from '@hanu/web-kit';
-import { Brand } from './Brand';
+import { Brand, Dialog, UserMenu } from '@hanu/web-kit';
+import { PATHS } from '../paths';
 import { NavLinks } from './NavLinks';
-import { UserMenu } from './UserMenu';
 
 /** The top bar on phones and tablets, with ☰ opening the menu as a drawer. */
 export function MobileNav() {
@@ -20,7 +19,7 @@ export function MobileNav() {
       >
         <Menu aria-hidden="true" className="size-5" />
       </button>
-      <Brand />
+      <Brand app="Admin" />
       <Dialog
         open={open}
         variant="drawer"
@@ -35,7 +34,7 @@ export function MobileNav() {
               setOpen(false);
             }}
           />
-          <UserMenu />
+          <UserMenu signInPath={PATHS.login} />
         </div>
       </Dialog>
     </header>

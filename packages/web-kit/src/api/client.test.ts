@@ -100,3 +100,11 @@ test('api, for an /auth/ path that answers 401 (wrong password or code), throws 
   expect(error).toMatchObject({ status: 401, code: 'INVALID_OTP' });
   expect(refreshes).toBe(0);
 });
+
+test('api, for a 202 with an empty body, resolves to undefined', async () => {
+  server.use(http.post('/api/v1/auth/otp', () => new HttpResponse(null, { status: 202 })));
+
+  await expect(
+    api('/auth/otp', { method: 'POST', body: { phone: '9815020001' } }),
+  ).resolves.toBeUndefined();
+});

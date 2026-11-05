@@ -71,6 +71,7 @@ export async function api<T>(path: string, init: ApiInit = {}): Promise<T> {
     if (response.status === 401) useSession.getState().signOut();
   }
   if (!response.ok) throw await toApiError(response);
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  // 202 and 204 answers may have no body at all (e.g. `/auth/otp`).
+  const text = await response.text();
+  return (text === '' ? undefined : JSON.parse(text)) as T;
 }

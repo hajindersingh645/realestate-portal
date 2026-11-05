@@ -1,3 +1,4 @@
+import { NotFoundPage, RequireSession } from '@hanu/web-kit';
 import { Route, Routes } from 'react-router';
 import { AuditLogPage } from './access/audit/AuditLogPage';
 import { RolesPage } from './access/roles/RolesPage';
@@ -8,9 +9,7 @@ import { LocationsPage } from './catalog/locations/LocationsPage';
 import { LookupsPage } from './catalog/lookups/LookupsPage';
 import { PropertyTypesPage } from './catalog/property-types/PropertyTypesPage';
 import { UnitConversionsPage } from './catalog/unit-conversions/UnitConversionsPage';
-import { RequireSession } from './auth/RequireSession';
 import { SetupPage } from './auth/SetupPage';
-import { NotFoundPage } from './NotFoundPage';
 import { PATHS } from './paths';
 import { AppShell } from './shell/AppShell';
 import { HomePage } from './shell/HomePage';
@@ -21,7 +20,7 @@ export function AppRoutes() {
     <Routes>
       <Route path={PATHS.login} element={<LoginPage />} />
       <Route path={PATHS.setup} element={<SetupPage />} />
-      <Route element={<RequireSession />}>
+      <Route element={<RequireSession signInPath={PATHS.login} />}>
         <Route element={<AppShell />}>
           <Route path={PATHS.home} element={<HomePage />} />
           <Route path={PATHS.locations} element={<LocationsPage />} />
@@ -34,7 +33,7 @@ export function AppRoutes() {
           <Route path={PATHS.auditLog} element={<AuditLogPage />} />
         </Route>
       </Route>
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="*" element={<NotFoundPage homePath={PATHS.home} />} />
     </Routes>
   );
 }

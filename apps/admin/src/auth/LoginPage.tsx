@@ -6,12 +6,12 @@ import {
   AuthCard,
   Button,
   FormError,
+  safeNext,
   type SessionTokens,
   TextField,
   textOf,
   useSession,
 } from '@hanu/web-kit';
-import { safeNext } from './next';
 
 const WRONG = {
   UNAUTHORIZED: 'Email, password or code is wrong.',

@@ -11,6 +11,7 @@ const base = {
   JWT_PRIVATE_KEY: 'line1\\nline2',
   OTP_SECRET: 'x'.repeat(32),
   ADMIN_URL: 'http://localhost:5174',
+  CATALOG_INTERNAL_URL: 'http://localhost:3002/',
   PLATFORM_COUNTRY: 'IN',
   PLATFORM_CURRENCY: 'INR',
   PLATFORM_LOCALE: 'en-IN',
@@ -28,4 +29,14 @@ test('loadIdentityConfig, without JWT_PRIVATE_KEY, throws', () => {
 
 test('loadIdentityConfig, when OTP_SECRET is shorter than 32 characters, throws', () => {
   expect(() => loadIdentityConfig({ ...base, OTP_SECRET: 'short' })).toThrow(/OTP_SECRET/);
+});
+
+test('loadIdentityConfig, without CATALOG_INTERNAL_URL, throws', () => {
+  expect(() => loadIdentityConfig({ ...base, CATALOG_INTERNAL_URL: '' })).toThrow(
+    /CATALOG_INTERNAL_URL/,
+  );
+});
+
+test('loadIdentityConfig, with a trailing slash on CATALOG_INTERNAL_URL, drops it', () => {
+  expect(loadIdentityConfig(base).catalogInternalUrl).toBe('http://localhost:3002');
 });

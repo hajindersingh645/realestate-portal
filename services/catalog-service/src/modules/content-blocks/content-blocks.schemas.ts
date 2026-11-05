@@ -1,4 +1,4 @@
-import { CONTENT_BLOCK_KEYS } from '@hanu/contracts';
+import { CONTENT_BLOCK_KEYS, type ContentBlockKey } from '@hanu/contracts';
 import { Type } from 'typebox';
 
 export const ContentBlockLink = Type.Object({
@@ -20,7 +20,7 @@ export const ContentBlockView = Type.Object({
 export const ContentBlockList = Type.Object({ data: Type.Array(ContentBlockView) });
 
 export const ContentBlockParams = Type.Object({
-  key: Type.Union(CONTENT_BLOCK_KEYS.map((k) => Type.Literal(k))),
+  key: Type.Unsafe<ContentBlockKey>(Type.String({ enum: [...CONTENT_BLOCK_KEYS] })),
 });
 
 export const PublishContentBlockBody = Type.Object(

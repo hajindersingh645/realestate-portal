@@ -33,8 +33,15 @@ async function issue(
   refresh: { token: string; expiresAt: string },
 ): Promise<SessionTokens> {
   const perms = await effectivePermissions(em, user.id);
+  const account = await sql<{ id: string; status: string }>(
+    em,
+    `select a.id, a.status from account_members m
+       join accounts a on a.id = m.account_id and a.deleted_at is null
+      where m.user_id = ? and m.status = 'active'`,
+    [user.id],
+  );
   return {
-    accessToken: await signAccessToken(signingKey, user.id, perms),
+    accessToken: await signAccessToken(signingKey, user.id, perms, account[0]),
     refreshToken: refresh.token,
     refreshExpiresAt: new Date(refresh.expiresAt),
     user,

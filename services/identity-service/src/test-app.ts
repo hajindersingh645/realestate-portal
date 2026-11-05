@@ -13,6 +13,7 @@ export function buildTestApp() {
     jwtPrivateKey: keys.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(),
     otpSecret: 'x'.repeat(32),
     adminUrl: 'http://admin.test',
+    catalogInternalUrl: 'http://catalog.test',
     platform: {
       country: 'IN',
       currency: 'INR',

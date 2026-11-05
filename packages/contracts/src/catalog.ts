@@ -19,3 +19,7 @@ export type PropertyKind = (typeof PROPERTY_KINDS)[number];
 
 export const LOCATION_TYPES = ['state', 'city', 'locality'] as const;
 export type LocationType = (typeof LOCATION_TYPES)[number];
+
+/** Admin-editable texts that appear inside forms. A key is added here when a form needs one. */
+export const CONTENT_BLOCK_KEYS = ['signup.data_notice'] as const;
+export type ContentBlockKey = (typeof CONTENT_BLOCK_KEYS)[number];

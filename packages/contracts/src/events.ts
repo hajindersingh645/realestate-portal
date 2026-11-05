@@ -42,6 +42,7 @@ export const REFERENCE_ENTITIES = [
   'property_type',
   'lookup',
   'unit_conversion',
+  'content_block',
 ] as const;
 export type ReferenceEntity = (typeof REFERENCE_ENTITIES)[number];
 

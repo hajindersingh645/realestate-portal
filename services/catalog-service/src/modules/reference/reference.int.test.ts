@@ -29,7 +29,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await sql(
     orm.em.fork(),
-    'truncate unit_conversions, locations, lookups, property_types, outbox_events cascade',
+    'truncate unit_conversions, locations, lookups, property_types, content_blocks, outbox_events cascade',
   );
 });
 
@@ -105,5 +105,27 @@ test('getReference, with an empty catalog, returns empty lists and not an error'
     propertyTypes: [],
     lookups: [],
     unitConversions: [],
+    notices: {},
+  });
+});
+
+test('getReference, with two versions of the consent notice, returns only the newest, in the platform locale', async () => {
+  for (const [version, locale, body] of [
+    [1, platform.locale, 'old'],
+    [2, platform.locale, 'new'],
+    [1, 'xx-XX', 'other'],
+  ] as const) {
+    await sql(
+      orm.em.fork(),
+      `insert into content_blocks (id, key, locale, version, body, links, created_at)
+       values (gen_random_uuid(), 'signup.data_notice', ?, ?, ?, '[]', now())`,
+      [locale, version, body],
+    );
+  }
+
+  const reference = await getReference(orm.em.fork(), platform);
+
+  expect(reference.notices).toEqual({
+    'signup.data_notice': { id: expect.any(String), version: 2, body: 'new', links: [] },
   });
 });

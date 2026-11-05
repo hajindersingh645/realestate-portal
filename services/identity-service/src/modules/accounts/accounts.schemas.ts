@@ -165,3 +165,17 @@ export const ProfessionalList = Type.Object({
   data: Type.Array(PublicProfessional),
   nextCursor: Nullable(Type.String()),
 });
+
+export const StaffAccountCountQuery = Type.Object({
+  type: Type.Optional(AccountTypeSchema),
+  q: Type.Optional(Type.String({ maxLength: 80 })),
+});
+
+export const StaffAccountCounts = Type.Object({
+  pending: Type.Integer(),
+  approved: Type.Integer(),
+  rejected: Type.Integer(),
+  suspended: Type.Integer(),
+  banned: Type.Integer(),
+  all: Type.Integer(),
+});

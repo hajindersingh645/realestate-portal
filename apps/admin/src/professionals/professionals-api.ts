@@ -35,9 +35,10 @@ export interface AccountDetail extends Omit<AccountRow, 'owner'> {
 const ACCOUNTS = `${IDENTITY}/accounts`;
 
 /** Newest first, 50 at a time; `filter` becomes the query string. */
-export function useAccounts(filter: URLSearchParams) {
+export function useAccounts(filter: URLSearchParams, enabled = true) {
   const search = filter.toString();
   return useInfiniteQuery({
+    enabled,
     queryKey: ['identity', 'accounts', search],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam }) => {
@@ -49,6 +50,17 @@ export function useAccounts(filter: URLSearchParams) {
       );
     },
     getNextPageParam: (last) => last.nextCursor,
+  });
+}
+
+export type AccountCounts = Record<AccountStatus | 'all', number>;
+
+/** Accounts per status tab, under the same type and search filters as the list. */
+export function useAccountCounts(filter: URLSearchParams) {
+  const search = filter.toString();
+  return useQuery({
+    queryKey: ['identity', 'accounts', 'counts', search],
+    queryFn: () => api<AccountCounts>(`${ACCOUNTS}/counts${search === '' ? '' : `?${search}`}`),
   });
 }
 

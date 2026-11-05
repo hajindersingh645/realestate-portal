@@ -5,6 +5,7 @@ import { createIdentityOrm } from '../../orm.js';
 import { syncPermissions } from '../../permissions-sync.js';
 import { seedAccount, seedUser } from './accounts.fixture.js';
 import {
+  countAccountsForStaff,
   decideAccount,
   getAccountForStaff,
   listAccountsForStaff,
@@ -253,4 +254,28 @@ test('getAccountForStaff, for an unknown account, throws NotFoundError', async (
   await expect(
     getAccountForStaff(orm.em.fork(), '7f1f7f0e-7d5c-4a3e-9b1e-2a8f5a1f6c99'),
   ).rejects.toBeInstanceOf(NotFoundError);
+});
+
+test('countAccountsForStaff, across statuses, counts live accounts per status and in total, with the same q and type filters as the list', async () => {
+  await seedAccount(orm.em.fork(), {
+    status: 'approved',
+    displayName: 'Ravi Realty',
+    slug: 'ravi-realty',
+  });
+  await seedAccount(orm.em.fork(), {
+    status: 'approved',
+    type: 'agency',
+    displayName: 'Sunrise Homes',
+    slug: 'sunrise',
+  });
+  await seedAccount(orm.em.fork(), { status: 'rejected', displayName: 'Asha Props' });
+  await seedAccount(orm.em.fork(), { status: 'pending', deleted: true });
+
+  const all = await countAccountsForStaff(orm.em.fork(), {});
+  const agencies = await countAccountsForStaff(orm.em.fork(), { type: 'agency' });
+  const ravi = await countAccountsForStaff(orm.em.fork(), { q: 'ravi' });
+
+  expect(all).toEqual({ pending: 0, approved: 2, rejected: 1, suspended: 0, banned: 0, all: 3 });
+  expect(agencies).toMatchObject({ approved: 1, all: 1 });
+  expect(ravi).toMatchObject({ approved: 1, rejected: 0, all: 1 });
 });

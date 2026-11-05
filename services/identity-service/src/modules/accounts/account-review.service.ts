@@ -233,3 +233,37 @@ export async function listAccountsForStaff(
       rows.length > PAGE && last !== undefined ? encodeCursor(last.createdAt, last.id) : null,
   };
 }
+
+export type StaffAccountCounts = Record<AccountStatus | 'all', number>;
+
+/** How many live accounts each status tab holds, under the same type and search filters as the list. */
+export async function countAccountsForStaff(
+  em: Em,
+  filter: Omit<StaffAccountFilter, 'status' | 'cursor'>,
+): Promise<StaffAccountCounts> {
+  const typed = filter.q?.trim().toLowerCase() ?? '';
+  const q = typed === '' ? null : typed;
+  const rows = await sql<{ status: AccountStatus; n: number }>(
+    em,
+    `select a.status, count(*)::int as n
+       from accounts a
+      where a.deleted_at is null
+        and (?::text is null or a.type = ?)
+        and (?::text is null or strpos(lower(a.display_name), ?) > 0 or strpos(a.slug, ?) > 0)
+      group by a.status`,
+    [filter.type ?? null, filter.type ?? null, q, q, q],
+  );
+  const counts: StaffAccountCounts = {
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    suspended: 0,
+    banned: 0,
+    all: 0,
+  };
+  for (const row of rows) {
+    counts[row.status] = row.n;
+    counts.all += row.n;
+  }
+  return counts;
+}

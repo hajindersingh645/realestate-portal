@@ -2,11 +2,14 @@ import { actorOf, ErrorBody, type App, type Orm } from '@hanu/service-kit';
 import {
   AccountIdParams,
   DecisionBody,
+  StaffAccountCountQuery,
+  StaffAccountCounts,
   StaffAccountList,
   StaffAccountQuery,
   StaffAccountView,
 } from './accounts.schemas.js';
 import {
+  countAccountsForStaff,
   decideAccount,
   getAccountForStaff,
   listAccountsForStaff,
@@ -30,6 +33,19 @@ export function registerAccountReviewRoutes(
       },
     },
     async (request) => await listAccountsForStaff(deps.orm.em.fork(), request.query),
+  );
+
+  // A fixed path, so Fastify matches it before `/:id`.
+  app.get(
+    '/admin/identity/accounts/counts',
+    {
+      config,
+      schema: {
+        querystring: StaffAccountCountQuery,
+        response: { 200: StaffAccountCounts, 400: ErrorBody, ...denied },
+      },
+    },
+    async (request) => await countAccountsForStaff(deps.orm.em.fork(), request.query),
   );
 
   app.get(

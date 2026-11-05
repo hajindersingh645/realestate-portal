@@ -152,3 +152,31 @@ test('POST /admin/identity/accounts/not-a-uuid/decision returns 400', async () =
 
   expect(res.statusCode).toBe(400);
 });
+
+test('GET /admin/identity/accounts/counts, with filters, passes them and returns the counts', async () => {
+  const counts = { pending: 0, approved: 3, rejected: 1, suspended: 0, banned: 0, all: 4 };
+  vi.mocked(service.countAccountsForStaff).mockResolvedValue(counts);
+  const { app, headers } = await setup();
+
+  const res = await app.inject({
+    method: 'GET',
+    url: '/admin/identity/accounts/counts?type=agent&q=ravi',
+    headers,
+  });
+
+  expect(res.statusCode).toBe(200);
+  expect(res.json()).toEqual(counts);
+  expect(vi.mocked(service.countAccountsForStaff).mock.calls[0]?.[1]).toEqual({
+    type: 'agent',
+    q: 'ravi',
+  });
+  expect(service.getAccountForStaff).not.toHaveBeenCalled();
+});
+
+test('GET /admin/identity/accounts/counts, without admin.account.review, returns 403', async () => {
+  const { app, headers } = await setup(['profile.manage']);
+
+  const res = await app.inject({ method: 'GET', url: '/admin/identity/accounts/counts', headers });
+
+  expect(res.statusCode).toBe(403);
+});

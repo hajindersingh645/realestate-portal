@@ -37,6 +37,12 @@ const detail = (overrides: Partial<AccountDetail> = {}): AccountDetail => ({
   ...overrides,
 });
 
+const COUNTS = { pending: 1, approved: 3, rejected: 0, suspended: 0, banned: 0, all: 4 };
+
+function counts(value = COUNTS) {
+  server.use(http.get('/api/v1/admin/identity/accounts/counts', () => HttpResponse.json(value)));
+}
+
 function signIn(perms = ['admin.account.review']) {
   useSession.getState().signIn({ accessToken: fakeToken(perms), user: TEST_USER });
 }
@@ -55,8 +61,9 @@ function detailServer(decide: (body: unknown) => Response) {
   return sent;
 }
 
-test('ProfessionalsPage, on the default Pending tab, asks for pending accounts and lists them', async () => {
+test('ProfessionalsPage, with accounts pending, opens on Pending, shows the counts and lists them', async () => {
   const seen: string[] = [];
+  counts();
   server.use(
     http.get('/api/v1/admin/identity/accounts', ({ request }) => {
       seen.push(new URL(request.url).search);
@@ -73,10 +80,40 @@ test('ProfessionalsPage, on the default Pending tab, asks for pending accounts a
   );
   expect(screen.getAllByText('+919815020001').length).toBeGreaterThan(0);
   expect(seen).toEqual(['?status=pending']);
+  expect(screen.getByRole('button', { name: 'Pending 1' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: 'Approved 3' })).toBeInTheDocument();
+});
+
+test('ProfessionalsPage, with nothing pending, opens on Approved; choosing Pending says nothing is waiting', async () => {
+  const seen: string[] = [];
+  counts({ ...COUNTS, pending: 0, all: 3 });
+  server.use(
+    http.get('/api/v1/admin/identity/accounts', ({ request }) => {
+      const search = new URL(request.url).search;
+      seen.push(search);
+      return HttpResponse.json({
+        data: search === '?status=approved' ? [{ ...row, status: 'approved' }] : [],
+        nextCursor: null,
+      });
+    }),
+  );
+  signIn();
+  renderApp('/professionals');
+
+  expect(await screen.findByRole('link', { name: 'Ravi Realty' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Approved 3' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Pending 0' }));
+
+  expect((await screen.findAllByText('Nothing waiting for review')).length).toBeGreaterThan(0);
+  expect(seen).toEqual(['?status=approved', '?status=pending']);
 });
 
 test('ProfessionalsPage, on the All tab, asks without a status', async () => {
   const seen: string[] = [];
+  counts();
   server.use(
     http.get('/api/v1/admin/identity/accounts', ({ request }) => {
       seen.push(new URL(request.url).search);
@@ -86,9 +123,9 @@ test('ProfessionalsPage, on the All tab, asks without a status', async () => {
   signIn();
   renderApp('/professionals');
 
-  await userEvent.setup().click(await screen.findByRole('button', { name: 'All' }));
+  await userEvent.setup().click(await screen.findByRole('button', { name: 'All 4' }));
 
-  await screen.findAllByText('No professionals here');
+  await screen.findAllByText('No professionals yet');
   expect(seen.at(-1)).toBe('');
 });
 

@@ -4,28 +4,44 @@ import { Link, useSearchParams } from 'react-router';
 import { formatDateTime } from '../access/access-api';
 import { PATHS } from '../paths';
 import { AccountStatusBadge } from './AccountStatusBadge';
-import { useAccounts, type AccountRow } from './professionals-api';
+import {
+  useAccountCounts,
+  useAccounts,
+  type AccountCounts,
+  type AccountRow,
+} from './professionals-api';
 
-const TABS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'suspended', label: 'Suspended' },
-  { value: 'banned', label: 'Banned' },
-  { value: 'all', label: 'All' },
+const TABS: { value: keyof AccountCounts; label: string; empty: string }[] = [
+  { value: 'pending', label: 'Pending', empty: 'Nothing waiting for review' },
+  { value: 'approved', label: 'Approved', empty: 'No approved professionals yet' },
+  { value: 'rejected', label: 'Rejected', empty: 'No rejected profiles' },
+  { value: 'suspended', label: 'Suspended', empty: 'No suspended profiles' },
+  { value: 'banned', label: 'Banned', empty: 'No banned profiles' },
+  { value: 'all', label: 'All', empty: 'No professionals yet' },
 ];
 
-/** The review queue (Pending first) and every other account, newest first. */
+/**
+ * Every account, newest first, one tab per status with its count. Opens on Pending while
+ * anything waits for review, otherwise on Approved.
+ */
 export function ProfessionalsPage() {
   const [params, setParams] = useSearchParams();
-  const status = params.get('status') ?? 'pending';
-  const filter = new URLSearchParams();
-  if (status !== 'all') filter.set('status', status);
+  const narrow = new URLSearchParams();
   for (const key of ['type', 'q']) {
     const value = params.get(key);
-    if (value !== null && value !== '') filter.set(key, value);
+    if (value !== null && value !== '') narrow.set(key, value);
   }
-  const list = useAccounts(filter);
+  const counts = useAccountCounts(narrow);
+  const opening = counts.data === undefined || counts.data.pending > 0 ? 'pending' : 'approved';
+  // Wait for the counts before choosing the opening tab, so the list is asked for only once.
+  const chosen = params.get('status');
+  const status = chosen ?? opening;
+  const ready = chosen !== null || !counts.isPending;
+  const filter = new URLSearchParams(narrow);
+  if (status !== 'all') filter.set('status', status);
+  const list = useAccounts(filter, ready);
+  const searching = narrow.has('q') || narrow.has('type');
+  const tab = TABS.find((t) => t.value === status);
   const rows = list.data?.pages.flatMap((p) => p.data);
 
   const name = (a: AccountRow) => (
@@ -37,7 +53,16 @@ export function ProfessionalsPage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title="Professionals" />
-      <FilterTabs label="Status" param="status" tabs={TABS} />
+      <FilterTabs
+        label="Status"
+        param="status"
+        defaultValue={opening}
+        tabs={TABS.map((t) => ({
+          value: t.value,
+          label: t.label,
+          ...(counts.data === undefined ? {} : { count: counts.data[t.value] }),
+        }))}
+      />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <SearchInput label="Search by name or address" />
         <label className="flex items-center text-sm">
@@ -68,11 +93,14 @@ export function ProfessionalsPage() {
         caption="Professionals"
         rows={rows}
         rowKey={(a) => a.id}
-        loading={list.isPending}
+        loading={!ready || list.isPending}
         error={list.error}
         onRetry={() => void list.refetch()}
         empty={
-          <EmptyState title="No professionals here" description="Try another tab or search." />
+          <EmptyState
+            title={searching ? 'No matches' : (tab?.empty ?? 'No professionals yet')}
+            description={searching ? 'Try another search or type.' : 'Other tabs may have some.'}
+          />
         }
         columns={[
           { header: 'Name', cell: name },
